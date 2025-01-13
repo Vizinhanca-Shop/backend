@@ -1,0 +1,28 @@
+{
+  "not_found": "Passeio não encontrado",
+  "minimun_price": "Valor minimo do passeio é: {fee}",
+  "translation": {
+    "already_exists": "A tradução {language} já existe",
+    "not_found": "Tradução {language} não encontrada",
+    "update": "Tradução do passeio atualizada"
+  },
+  "pin": {
+    "cannot_delete": "Não é possível excluir o pin"
+  },
+  "country": {
+    "not_found": "Pais não encontrado"
+  },
+  "category": {
+    "cannot_delete": "Não é possível excluir a categoria",
+    "already_exists": "A categoria {name} já existe",
+    "create": "Categoria criada",
+    "update": "Categoria atualizada",
+    "delete": "Categoria excluída",
+    "not_found": "Categoria não encontrada",
+    "translate_not_found": "Tradução da categoria não encontrada"
+  },
+  "review": {
+    "create": "Feedback criada"
+  },
+  "cannot_delete": "Não é possível excluir o passeio"
+}

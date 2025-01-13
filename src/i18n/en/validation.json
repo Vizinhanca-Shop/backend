@@ -1,0 +1,9 @@
+{
+  "isEmail": "The email provided is not valid.",
+  "isNotEmpty": "This field is required.",
+  "isStrongPassword": "Password must contain at least 6 characters and include at least one special character.",
+  "IsPhoneNumberConstraint": "The phone number provided is not valid.",
+  "IsPasswordConstraint": "Password must contain at least 6 characters and include at least one special character.",
+  "IsUniqueConstraint": "This value is already in use",
+  "failed": "Validation failed."
+}

@@ -1,0 +1,33 @@
+{
+  "coupon": {
+    "applied": "Coupon applied successfully",
+    "invalid": "Invalid coupon",
+    "expired": "Coupon expired",
+    "already_exists": "A coupon with this code already exists",
+    "guide_not_exists": "User ID does not exist or the user is not a guide",
+    "tour_not_found": "Tour no encontrado",
+    "cant_change_from_all_tours": "It is not possible to change a coupon related to all tours",
+    "cant_remove_tour": "It is not possible to remove initially added tours, only adding new ones",
+    "expiration_date_is_invalid": "Expiration data needs to be greater than current data +1",
+    "invalid_quantity": "Quantity of coupons must be greater than the quantity currently applied",
+    "tours_and_guide_used": "Can be used as a guide or tour only",
+    "tours_or_guide_mandatory": "It is necessary to send a tour or guide"
+  },
+  "gift": {
+    "not_found": "Gift not found to redeem",
+    "paidNewUser": " <br><br> email: {email} <br> password: {password} <br><br>",
+    "paid": "You just received a gift! <br> Log in to your account and enjoy your ride"
+  },
+  "bank": {
+    "code_compe_not_found": "Bank code not found"
+  },
+  "payment_method": {
+    "CREDIT_CARD": "Credit Card",
+    "PIX": "Pix",
+    "REDEEM": "Redeem"
+  },
+  "payment_received": {
+    "description": "Payment received successfully. Now you can enjoy your tour on the APP!",
+    "description_tour_title": "Tour: {title}"
+  }
+}

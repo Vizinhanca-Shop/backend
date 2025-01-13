@@ -1,0 +1,9 @@
+{
+  "isEmail": "no es un email válido",
+  "isNotEmpty": "no puede estar vacío",
+  "isStrongPassword": "La contraseña debe contener al menos 6 caracteres y al menos un carácter especial.",
+  "IsPhoneNumberConstraint": "El número de teléfono no es válido",
+  "IsPasswordConstraint": "La contraseña debe contener al menos 6 caracteres y al menos un carácter especial.",
+  "IsUniqueConstraint": "Este valor ya está en uso.",
+  "failed": "La validación falló"
+}

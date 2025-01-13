@@ -1,0 +1,16 @@
+FROM node:18-alpine
+
+WORKDIR /usr/src/app
+
+COPY . .
+
+RUN rm -rf node_modules
+RUN rm -rf dist
+RUN apk add openssl
+
+RUN npm install -g yarn --force
+RUN yarn install
+
+RUN NODE_OPTIONS="--max-old-space-size=2048" yarn build
+
+EXPOSE 5000

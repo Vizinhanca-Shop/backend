@@ -1,0 +1,54 @@
+services:
+  backend:
+    networks:
+      - default
+    restart: always
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
+    container_name: 'dev-api.centerlight.com'
+    build:
+      dockerfile: ./registry/development/Dockerfile
+      context: ./
+    volumes:
+      - './backend:/usr/src/backend'
+    command: 'yarn start:dev --host'
+    env_file:
+      - .env
+    ports:
+      - ${API_PORT}:${API_PORT}
+    environment:
+      API_PORT: '${API_PORT}'
+      API_URL: '${API_URL}'
+      DATABASE_URL: '${DATABASE_URL}'
+      POSTGRES_HOST: '${POSTGRES_HOST}'
+      POSTGRES_PORT: '${POSTGRES_PORT}'
+      POSTGRES_DB: '${POSTGRES_DB}'
+      POSTGRES_USER: '${POSTGRES_USER}'
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD}'
+      JWT_SECRET: '${JWT_SECRET}'
+      JWT_REFRESH_SECRET: '${JWT_REFRESH_SECRET}'
+      HASH_SALT: '${HASH_SALT}'
+
+  postgres:
+    depends_on:
+      - traefik
+    container_name: '${POSTGRES_HOST}'
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - '${POSTGRES_PORT}:${POSTGRES_PORT}'
+    volumes:
+      - './.data:/var/lib/postgresql/data:rw'
+    labels:
+      traefik.enable: true
+      traefik.http.routers.pg.rule: Host(`${POSTGRES_HOST}`)
+      traefik.http.routers.pg.entrypoints: http
+      traefik.http.routers.pg.port: 5432
+
+networks:
+  default:
+    driver: bridge

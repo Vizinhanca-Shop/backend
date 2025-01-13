@@ -1,0 +1,157 @@
+import {
+  Controller,
+  UploadedFile,
+  Post,
+  Body,
+  UseInterceptors,
+  Headers,
+} from '@nestjs/common'
+import { ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger'
+import { AuthService } from './auth.service'
+import {
+  SignInDto,
+  RefreshTokenDto,
+  ForgotPasswordDto,
+  SignUpDto,
+  ForgotPasswordcodeDto,
+  NewPasswordDto,
+} from './dto/auth.dto'
+import { FileInterceptor } from '@nestjs/platform-express'
+import { GoogleStrategy } from './strategies/google'
+import { FacebookStrategy } from './strategies/facebook'
+import { AppleStrategy } from './strategies/apple'
+
+@ApiTags('auth')
+@Controller('auth')
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
+  @Post('sign-up')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FileInterceptor('avatar'))
+  @ApiResponse({
+    status: 201,
+    schema: {
+      example: {
+        id: 1,
+        email: 'user@centerlight.com',
+        name: 'User',
+        cellphone: '5548981726354',
+        password: '123@456',
+      },
+    },
+  })
+  signUp(@Body() data: SignUpDto, @UploadedFile() file: Express.Multer.File) {
+    return this.authService.signUp(data, file)
+  }
+
+  @Post('sign-in/oauth')
+  async oAuth(
+    @Body() data: { token: string; type: 'GOOGLE' | 'APPLE' | 'FACEBOOK' },
+    @Headers('x-request-origin') headers: string,
+  ) {
+    const strategy = {
+      GOOGLE: new GoogleStrategy(),
+      FACEBOOK: new FacebookStrategy(),
+      APPLE: new AppleStrategy(),
+    }
+    return await strategy[data.type].validate(data.token, headers)
+  }
+
+  @Post('sign-in')
+  @ApiResponse({
+    status: 200,
+    schema: {
+      example: {
+        email: 'user@centerlight.com.br',
+        avatarUrl: 'api.centerlight.com.br/avatar/j3kda4M2phÇoson4k5Y.png',
+        role: {
+          id: 2,
+          name: 'user',
+        },
+        person: {
+          name: 'User',
+          cellphone: '5548981726354',
+        },
+        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
+        refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
+      },
+    },
+  })
+  signIn(
+    @Body() data: SignInDto,
+    @Headers('x-request-origin') headers: string,
+  ) {
+    return this.authService.signIn(data, headers)
+  }
+
+  @Post('refresh-token')
+  @ApiResponse({
+    status: 200,
+    schema: {
+      example: {
+        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
+        refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
+      },
+    },
+  })
+  refreshToken(@Body() { refreshToken }: RefreshTokenDto) {
+    return this.authService.refreshToken(refreshToken)
+  }
+
+  @Post('forgot-password')
+  @ApiResponse({
+    status: 200,
+    schema: {
+      example: 'Email sent',
+    },
+  })
+  forgotPassword(@Body() data: ForgotPasswordDto) {
+    return this.authService.forgotPassword(data)
+  }
+
+  @Post('forgot-password/code')
+  @ApiResponse({
+    status: 200,
+    schema: {
+      example: 'Code validated',
+    },
+  })
+  forgotPasswordCode(@Body() data: ForgotPasswordcodeDto) {
+    return this.authService.forgotPasswordCode(data.code)
+  }
+
+  @Post('user-validate/email')
+  sendCodeToValidateEmail(@Body() { email }: { email: string }) {
+    return this.authService.sendEmailConfirmationCode(email)
+  }
+
+  @Post('user-validate/email/code')
+  receiveCodeToValidateEmail(
+    @Body() { email, code }: { email: string; code: string },
+  ) {
+    return this.authService.receiveCodeToValidateEmail(email, code)
+  }
+
+  @Post('user-validate/code')
+  @ApiResponse({
+    status: 200,
+    schema: {
+      example: 'Code validated',
+    },
+  })
+  validateUserWithCode(@Body() data: ForgotPasswordcodeDto) {
+    return this.authService.validateUserWithCode(data.code)
+  }
+
+  @Post('forgot-password/new-password')
+  @ApiResponse({
+    status: 200,
+    schema: {
+      example: 'Password updated',
+    },
+  })
+  forgotPasswordNewPassword(@Body() { password, code }: NewPasswordDto) {
+    return this.authService.forgotPasswordChange(password, code)
+  }
+}

@@ -1,0 +1,96 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserStatus {
+  ACTIVED
+  INACTIVE
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  USER
+}
+
+model User {
+  id               Int               @id @default(autoincrement())
+  email            String            @unique
+  password         String?
+  avatarUrl        String?           @unique
+  avatar           Avatar?           @relation(fields: [avatarUrl], references: [url])
+  role             Role              @default(USER)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  deletedAt        DateTime?
+  person           Person?
+  userRecoveryCode userRecoveryCode?
+  session          Session?
+  status           UserStatus
+
+  @@map("users")
+}
+
+model Person {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @unique
+  user      User      @relation(fields: [userId], references: [id])
+  name      String
+  document  String?   @unique
+  cellphone String?   @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@map("people")
+}
+
+model userRecoveryCode {
+  id        Int       @id @default(autoincrement())
+  userId    Int       @unique
+  user      User      @relation(fields: [userId], references: [id])
+  code      String    @unique
+  createdAt DateTime  @default(now())
+  expiredAt DateTime?
+
+  @@map("user_recovery_code")
+}
+
+model confirmationCode {
+  code      String
+  email     String    @unique
+  createdAt DateTime  @default(now())
+  expiredAt DateTime?
+
+  @@map("confirmation_code")
+}
+
+model Avatar {
+  id        Int       @id @default(autoincrement())
+  url       String?   @unique
+  key       String?   @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+  User      User?
+
+  @@map("avatar")
+}
+
+model Session {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  token     String   @unique
+  expiredAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sessions")
+}

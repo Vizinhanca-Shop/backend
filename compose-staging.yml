@@ -1,0 +1,34 @@
+services:
+  backend:
+    networks:
+      - shared
+    restart: always
+    container_name: '${API_HOST}'
+    build:
+      dockerfile: ./registry/production/Dockerfile
+      context: ./
+    volumes:
+      - './:/usr/src/backend'
+    command: 'sh -c ''NODE_OPTIONS="--max-old-space-size=2048" yarn start:prod --host'''
+    env_file:
+      - .env
+    ports:
+      - ${API_PORT}:${API_PORT}
+    environment:
+      VIRTUAL_HOST: '${API_HOST}'
+      LETSENCRYPT_HOST: '${API_HOST}'
+      API_PORT: '${API_PORT}'
+      API_URL: '${API_URL}'
+      DATABASE_URL: '${DATABASE_URL}'
+      POSTGRES_HOST: '${POSTGRES_HOST}'
+      POSTGRES_PORT: '${POSTGRES_PORT}'
+      POSTGRES_DB: '${POSTGRES_DB}'
+      POSTGRES_USER: '${POSTGRES_USER}'
+      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD}'
+      JWT_SECRET: '${JWT_SECRET}'
+      JWT_REFRESH_SECRET: '${JWT_REFRESH_SECRET}'
+      HASH_SALT: '${HASH_SALT}'
+
+networks:
+  shared:
+    external: true
