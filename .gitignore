@@ -40,3 +40,4 @@ uploads
 *-lock.json
 
 uploads/*
+.data
