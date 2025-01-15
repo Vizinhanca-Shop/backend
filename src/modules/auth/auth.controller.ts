@@ -5,6 +5,7 @@ import {
   Body,
   UseInterceptors,
   Headers,
+  BadRequestException,
 } from '@nestjs/common'
 import { ApiConsumes, ApiResponse, ApiTags } from '@nestjs/swagger'
 import { AuthService } from './auth.service'
@@ -15,9 +16,11 @@ import {
   SignUpDto,
   ForgotPasswordcodeDto,
   NewPasswordDto,
+  UserCreateResponseDTO,
 } from './dto/auth.dto'
-import { FileInterceptor } from '@nestjs/platform-express'
 
+import { FileInterceptor } from '@nestjs/platform-express'
+import { diskStorage } from 'multer'
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -25,19 +28,36 @@ export class AuthController {
 
   @Post('sign-up')
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FileInterceptor('avatar'))
-  @ApiResponse({
-    status: 201,
-    schema: {
-      example: {
-        id: 1,
-        email: 'user@centerlight.com',
-        name: 'User',
-        password: '123@456',
-      },
-    },
-  })
-  signUp(@Body() data: SignUpDto, @UploadedFile() file: Express.Multer.File) {
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      storage: diskStorage({
+        destination: './public/avatar',
+        filename: (req, file, cb) => {
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('')
+          return cb(null, `${randomName}${file.originalname}`)
+        },
+      }),
+    }),
+  )
+  signUp(
+    @Body() data: SignUpDto,
+    @UploadedFile() file: Express.Multer.File,
+  ): Promise<UserCreateResponseDTO> {
+    if (data.isPilot && !data.canac) {
+      throw new BadRequestException({
+        message: 'Falha na validação',
+        fields: [
+          {
+            field: 'canac',
+            message: 'CANAC é obrigatório para pilotos',
+          },
+        ],
+      })
+    }
+
     return this.authService.signUp(data, file)
   }
 

@@ -1,6 +1,15 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsNotEmpty, IsOptional, IsEmail } from 'class-validator'
-import { IsPhoneNumber, IsPassword, IsUnique } from 'src/custom/class-validator'
+import {
+  IsNotEmpty,
+  IsOptional,
+  IsEmail,
+  IsBoolean,
+  IsNumber,
+} from 'class-validator'
+import { IsPassword, IsUnique } from 'src/custom/class-validator'
+import { IsCpf } from 'src/custom/class-validator/isCpf'
+import { Transform } from 'class-transformer'
+import { UserResponseDTO } from 'src/modules/user/dto/user.dto'
 
 export class SignUpDto {
   @IsEmail()
@@ -14,22 +23,41 @@ export class SignUpDto {
   @IsNotEmpty()
   name: string
 
+  @IsOptional()
+  canac?: string
+
   @IsNotEmpty()
   birthdate: Date
 
   @IsOptional()
-  @IsUnique('person', 'document')
-  document?: string
+  @IsCpf()
+  @IsUnique('person', 'cpf')
+  cpf: string
 
   @ApiProperty({ type: 'string', format: 'binary', required: false })
   @IsOptional()
   avatar?: string
 
   @IsNotEmpty()
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
   stateId: number
 
   @IsNotEmpty()
+  @IsNumber()
+  @Transform(({ value }) => Number(value))
   cityId: number
+
+  @IsNotEmpty()
+  @IsBoolean()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      return value === 'true'
+    }
+
+    return value
+  })
+  isPilot: boolean
 }
 
 export class SignInDto {
@@ -65,4 +93,12 @@ export class NewPasswordDto {
 
   @IsNotEmpty()
   code: string
+}
+
+export class UserCreateResponseDTO extends UserResponseDTO {
+  @ApiProperty()
+  token: string
+
+  @ApiProperty()
+  refreshToken: string
 }

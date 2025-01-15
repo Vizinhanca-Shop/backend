@@ -9,7 +9,7 @@ import { I18nService, I18nContext } from 'nestjs-i18n'
 import { UserService } from '../user/user.service'
 import { createRecoveryCode, encrypt, jwt, validateCPF } from 'src/utils'
 import PrismaClient from 'prisma/instance'
-import { SignUpDto, SignInDto } from './dto/auth.dto'
+import { SignUpDto, SignInDto, UserCreateResponseDTO } from './dto/auth.dto'
 import { I18nTranslations } from 'src/i18n/generated/i18n.types'
 import { Role } from '@prisma/client'
 
@@ -102,11 +102,8 @@ export class AuthService {
   async signUp(
     signupData: SignUpDto,
     file: Express.Multer.File,
-  ): Promise<signUpReturnType> {
-    const cpfIsValid = validateCPF(signupData?.document)
-    if (!cpfIsValid) throw new BadRequestException('CPF inválido')
-
-    const user = await this.usersService.create(signupData, null, null)
+  ): Promise<UserCreateResponseDTO> {
+    const user = await this.usersService.create(signupData, null, file)
 
     if (!user) {
       throw new BadRequestException(
@@ -115,25 +112,6 @@ export class AuthService {
         }),
       )
     }
-
-    // if (file) {
-    //   const uploadedImage = await this.s3Service.uploadFile(file, 'user-avatar')
-    //   await PrismaClient.avatar.create({
-    //     data: {
-    //       url: uploadedImage.Location,
-    //       key: uploadedImage.Key,
-    //     },
-    //   })
-
-    //   await PrismaClient.user.update({
-    //     where: {
-    //       id: user.id,
-    //     },
-    //     data: {
-    //       avatarUrl: uploadedImage.Location,
-    //     },
-    //   })
-    // }
 
     const payload = {
       id: user.id,
@@ -155,30 +133,27 @@ export class AuthService {
         person: {
           select: {
             name: true,
+            birthdate: true,
+            cpf: true,
+            canac: true,
+            city: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            state: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+              },
+            },
+            isPilot: true,
           },
         },
       },
     })
-
-    const code = await createRecoveryCode()
-
-    const expiredAt = new Date(Date.now() + 60000 * 30)
-
-    await PrismaClient.userRecoveryCode.create({
-      data: { code: code, expiredAt, userId: user.id },
-    })
-
-    // await this.sendgrid.sendEmail({
-    //   to: user.email,
-    //   subject: this.i18n.t('auth.forget_password.send_code', {
-    //     lang: I18nContext.current().lang,
-    //     args: { code },
-    //   }),
-    //   html: this.i18n.t('auth.forget_password.send_code', {
-    //     lang: I18nContext.current().lang,
-    //     args: { code },
-    //   }),
-    // })
 
     return {
       ...updatedUser,

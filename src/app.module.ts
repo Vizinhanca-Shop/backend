@@ -29,6 +29,7 @@ import { ServeStaticModule } from '@nestjs/serve-static'
 import { RequestLoggerMiddleware } from './middleware/request-logger.middleware'
 import { AuthMiddleware } from './middleware/auth.middleware'
 import { RolesGuard } from './guard/role.guard'
+import { StateModule } from './modules/state/state.module'
 @Module({
   imports: [
     UserModule,
@@ -55,7 +56,9 @@ import { RolesGuard } from './guard/role.guard'
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
+      serveRoot: '../public',
     }),
+    StateModule,
   ],
   controllers: [AppController, ExportController],
   providers: [

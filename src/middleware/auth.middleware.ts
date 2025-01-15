@@ -3,7 +3,7 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common'
-import { Request, Response } from 'express'
+import { Request } from 'express'
 import { jwt } from 'src/utils'
 import PrismaClient from 'prisma/instance'
 import { Role } from '@prisma/client'
@@ -16,6 +16,7 @@ interface AuthMiddlewareRequest extends Request {
   }
 }
 
+const publicRoutes = ['auth', 'public']
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
   async use(req: AuthMiddlewareRequest, next: (value?: unknown) => void) {
@@ -23,9 +24,17 @@ export class AuthMiddleware implements NestMiddleware {
     const accessToken = bearerHeader?.split(' ')[1]
     const token = accessToken ?? bearerHeader
 
+    const isPublicRoute = publicRoutes.some((route) =>
+      req.originalUrl.includes(route),
+    )
+
+    if (isPublicRoute) {
+      return req.next()
+    }
+
     if (!token) {
       //TODO: Implement a better way to handle this to access public routes
-      return next()
+      return req.next(new UnauthorizedException('Token not provided'))
     }
 
     const info = jwt.verify(token)
@@ -42,11 +51,11 @@ export class AuthMiddleware implements NestMiddleware {
     })
 
     if (!userAuth) {
-      return next(new UnauthorizedException('Invalid token'))
+      return req.next(new UnauthorizedException('Invalid token'))
     }
 
     req.user = userAuth
 
-    next()
+    req.next()
   }
 }

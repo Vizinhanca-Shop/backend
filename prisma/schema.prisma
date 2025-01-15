@@ -66,7 +66,7 @@ model Person {
   user      User      @relation(fields: [userId], references: [id])
   name      String
   canac     String?   @unique
-  document  String    @unique
+  cpf       String    @unique
   birthdate DateTime
   isPilot   Boolean   @default(false)
   stateId   Int

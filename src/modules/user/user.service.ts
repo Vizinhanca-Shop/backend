@@ -5,9 +5,8 @@ import {
 } from '@nestjs/common'
 import { I18nService, I18nContext } from 'nestjs-i18n'
 import PrismaClient from 'prisma/instance'
-import { CreateUserDto } from './dto/create-user.dto'
-import { ChangePasswordDto, UpdateUserDto } from './dto/update-user.dto'
-import { SearchUserDto } from './dto/search-user.dts'
+import { CreateUserDto } from './dto/user.dto'
+import { ChangePasswordDto, UpdateUserDto, SearchUserDto } from './dto/user.dto'
 import { encrypt } from 'src/utils/encrypt'
 import { jwt, removeInvalidValues, validateCPF } from 'src/utils'
 import { I18nTranslations } from 'src/i18n/generated/i18n.types'
@@ -27,9 +26,9 @@ export class UserService {
     file?: Express.Multer.File,
   ) {
     try {
-      if (createUserDto?.document) {
+      if (createUserDto?.cpf) {
         const person = await PrismaClient.person.findUnique({
-          where: { document: createUserDto.document },
+          where: { cpf: createUserDto.cpf },
         })
 
         if (person) {
@@ -93,9 +92,10 @@ export class UserService {
             create: {
               name: personData.name,
               birthdate: personData.birthdate,
-              document: personData.document,
-              state: { connect: { id: personData.stateId } },
-              city: { connect: { id: personData.cityId } },
+              cpf: personData.cpf,
+              isPilot: personData?.isPilot,
+              state: { connect: { id: +personData.stateId } },
+              city: { connect: { id: +personData.cityId } },
             },
           },
         },
@@ -120,42 +120,20 @@ export class UserService {
         )
       }
 
-      // if (file) {
-      //   const uploadedImage = await this.s3Service.uploadFile(
-      //     file,
-      //     'user-avatar',
-      //   )
-      //   await PrismaClient.avatar.create({
-      //     data: {
-      //       url: uploadedImage.Location,
-      //       key: uploadedImage.Key,
-      //     },
-      //   })
+      if (file) {
+        const url = process.env.API_URL + '/' + file.path
 
-      //   await PrismaClient.user.update({
-      //     where: {
-      //       id: user.id,
-      //     },
-      //     data: {
-      //       avatarUrl: uploadedImage.Location,
-      //     },
-      //   })
+        console.log({ url })
 
-      //   return PrismaClient.user.findFirst({
-      //     where: { id: user.id },
-      //     select: {
-      //       id: true,
-      //       email: true,
-      //       role: true,
-      //       avatarUrl: true,
-      //       person: {
-      //         select: {
-      //           name: true,
-      //         },
-      //       },
-      //     },
-      //   })
-      // }
+        return await PrismaClient.user.update({
+          where: {
+            id: user.id,
+          },
+          data: {
+            avatarUrl: url,
+          },
+        })
+      }
 
       return user
     } catch (error) {
@@ -366,7 +344,7 @@ export class UserService {
         person: {
           select: {
             name: true,
-            document: true,
+            cpf: true,
           },
         },
       },
@@ -427,8 +405,8 @@ export class UserService {
       })
     }
 
-    if (personData?.document) {
-      const cpfIsValid = validateCPF(updateUserDto.document)
+    if (personData?.cpf) {
+      const cpfIsValid = validateCPF(updateUserDto.cpf)
       if (!cpfIsValid) throw new BadRequestException('Cpf invalido')
 
       const person = await PrismaClient.person.findUnique({
@@ -438,7 +416,7 @@ export class UserService {
               not: +id,
             },
           },
-          document: updateUserDto.document?.replace(/\D/g, ''),
+          cpf: updateUserDto.cpf?.replace(/\D/g, ''),
         },
       })
 
@@ -488,8 +466,8 @@ export class UserService {
         ...(filtredPersonData?.birthdate && {
           birthdate: new Date(filtredPersonData.birthdate),
         }),
-        ...(filtredPersonData?.document && {
-          document: filtredPersonData?.document?.replace(/\D/g, ''),
+        ...(filtredPersonData?.cpf && {
+          cpf: filtredPersonData?.cpf?.replace(/\D/g, ''),
         }),
       },
     })
@@ -546,7 +524,7 @@ export class UserService {
             birthdate: true,
             canac: true,
             city: true,
-            document: true,
+            cpf: true,
             cityId: true,
             stateId: true,
             isPilot: true,
@@ -569,7 +547,7 @@ export class UserService {
         person: {
           update: {
             name: `${id}@deleted-name`,
-            document: `${id}@deleted-document`,
+            cpf: `${id}@deleted-cpf`,
             canac: `${id}@deleted-canac`,
           },
         },
@@ -579,21 +557,21 @@ export class UserService {
         person: {
           select: {
             id: true,
-            document: true,
+            cpf: true,
           },
         },
       },
     })
 
-    if (user?.person?.document) {
-      const maskDocument = `${id}@deleted-${user?.person?.document?.substring(0, 2)}.xxx.xxx-${user?.person?.document?.substring(8, 10)}`
+    if (user?.person?.cpf) {
+      const maskDocument = `${id}@deleted-${user?.person?.cpf?.substring(0, 2)}.xxx.xxx-${user?.person?.cpf?.substring(8, 10)}`
 
       await PrismaClient.person.update({
         where: {
           id: user.person.id,
         },
         data: {
-          document: maskDocument,
+          cpf: maskDocument,
         },
       })
     }

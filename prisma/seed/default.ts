@@ -5,7 +5,7 @@ export const defaultUsers = {
     person: {
       name: 'Admin Seed',
       birthdate: '1990-01-01',
-      document: '12345678900',
+      cpf: '12345678900',
       stateId: 1,
       cityId: 1,
     },
@@ -16,7 +16,7 @@ export const defaultUsers = {
     person: {
       name: 'Manager Seed',
       birthdate: '1990-01-01',
-      document: '12345678901',
+      cpf: '12345678901',
       stateId: 1,
       cityId: 1,
     },
@@ -27,7 +27,7 @@ export const defaultUsers = {
     person: {
       name: 'User Seed',
       birthdate: '1990-01-01',
-      document: '12345678902',
+      cpf: '12345678902',
       stateId: 1,
       cityId: 1,
     },
@@ -38,7 +38,7 @@ export const defaultUsers = {
     person: {
       name: 'Pilot Seed',
       birthdate: '1990-01-01',
-      document: '12345678903  ',
+      cpf: '12345678903  ',
       isPilot: true,
       stateId: 1,
       cityId: 1,

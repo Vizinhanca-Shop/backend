@@ -1,9 +1,9 @@
 {
   "isEmail": "Email não é válido",
   "isNotEmpty": "Campo não pode ser vazio",
-  "isStrongPassword": "Senha deve conter pelo menos 6 caracteres e incluir pelo menos um caractere especial.",
+  "isStrongPassword": "Senha deve conter pelo menos 8 caracteres, um número, uma letra maiúscula, uma letra minúscula e incluir pelo menos um caractere especial.",
   "IsPhoneNumberConstraint": "Número de telefone não é válido",
-  "IsPasswordConstraint": "Senha deve conter pelo menos 6 caracteres e incluir pelo menos um caractere especial.",
+  "IsPasswordConstraint": "Senha deve conter pelo menos 8 caracteres, um número, uma letra maiúscula, uma letra minúscula e incluir pelo menos um caractere especial.",
   "IsUniqueConstraint": "Este valor já está em uso",
   "failed": "Falha na validação"
 }

@@ -21,11 +21,10 @@ import {
   ApiQuery,
 } from '@nestjs/swagger'
 import { UserService } from './user.service'
-import { CreateUserDto } from './dto/create-user.dto'
-import { ChangePasswordDto, UpdateUserDto } from './dto/update-user.dto'
+import { CreateUserDto } from './dto/user.dto'
+import { ChangePasswordDto, UpdateUserDto, SearchUserDto } from './dto/user.dto'
 import { RolesGuard } from 'src/guard/role.guard'
 import { Roles } from 'src/custom/decorators/roles.decorator'
-import { SearchUserDto } from './dto/search-user.dts'
 import { AuthMiddlewareRequest } from 'src/types/type'
 import { UserStatus } from '@prisma/client'
 
