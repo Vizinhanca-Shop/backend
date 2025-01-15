@@ -32,7 +32,7 @@ model User {
   person           Person?
   userRecoveryCode userRecoveryCode?
   session          Session?
-  status           UserStatus
+  status           UserStatus        @default(ACTIVED)
 
   @@map("users")
 }
@@ -55,7 +55,7 @@ model userRecoveryCode {
   id        Int       @id @default(autoincrement())
   userId    Int       @unique
   user      User      @relation(fields: [userId], references: [id])
-  code      String    @unique
+  code      Int       @unique
   createdAt DateTime  @default(now())
   expiredAt DateTime?
 

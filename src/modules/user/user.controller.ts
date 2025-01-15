@@ -294,39 +294,4 @@ export class UserController {
   changePassword(@Request() req, @Body() data: ChangePasswordDto) {
     return this.userService.changePassword(req.user.id, data)
   }
-
-  @Roles('admin', 'guide')
-  @Post('receipt-method')
-  createReceiptMethod(
-    @Request() req: AuthMiddlewareRequest,
-    @Body() data: CreateReceiptMethodDto,
-  ) {
-    return this.userService.createReceiptMethod(data, req)
-  }
-
-  @Put('receipt-method')
-  editReceiptMethod(
-    @Request() req: AuthMiddlewareRequest,
-    @Body() data: CreateReceiptMethodDto,
-  ) {
-    return this.userService.editReceiptMethod(data, req)
-  }
-
-  @Roles('admin', 'guide')
-  @Post('address-info')
-  createAddressInfo(
-    @Request() req: AuthMiddlewareRequest,
-    @Body() data: CreateAddressInfo,
-  ) {
-    return this.userService.createAddressInfo(data, +req.user.id)
-  }
-
-  @Roles('admin', 'guide')
-  @Put('address-info')
-  editAddressInfo(
-    @Request() req: AuthMiddlewareRequest,
-    @Body() data: UpdateAddressInfo,
-  ) {
-    return this.userService.updateAddressInfo(data, +req.user.id)
-  }
 }

@@ -1,3 +1,4 @@
+import PrismaClient from 'prisma/instance'
 export * from './encrypt'
 export { default as jwt } from './jwt'
 export * from './regex'
@@ -31,4 +32,26 @@ export const distinctArray = (array: any[], key: string) => {
     seen.add(id)
     return true
   })
+}
+
+export const createRecoveryCode = async () => {
+  const maxRetries = 10
+  let retries = 0
+
+  while (retries < maxRetries) {
+    const code = Math.floor(100000 + Math.random() * 900000)
+    const exists = await PrismaClient.userRecoveryCode.findFirst({
+      where: { code },
+    })
+
+    if (!exists) {
+      return code
+    }
+
+    if (retries === maxRetries) {
+      throw new Error('Could not generate a recovery code, max retries reached')
+    }
+
+    retries++
+  }
 }

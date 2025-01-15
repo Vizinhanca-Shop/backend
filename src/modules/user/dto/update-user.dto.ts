@@ -3,6 +3,7 @@ import { PartialType } from '@nestjs/mapped-types'
 import { IsOptional, IsEmail, IsNotEmpty } from 'class-validator'
 import { CreateUserDto } from './create-user.dto'
 import { IsPassword, IsPhoneNumber } from 'src/custom/class-validator'
+import { Role } from '@prisma/client'
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsEmail()
@@ -21,28 +22,7 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   avatar?: string
 
   @IsOptional()
-  roleId?: number
-
-  @IsOptional()
-  wantToBeCalled?: string
-
-  @IsOptional()
-  cadastur?: string
-
-  @IsOptional()
-  mother_name?: string
-
-  @IsOptional()
-  birthdate?: Date
-
-  @IsOptional()
-  @ApiProperty({
-    type: 'string',
-    format: 'date-time',
-    required: false,
-    example: '2021-09-01T00:00:00.000Z',
-  })
-  cadasturAt?: string
+  role?: Role
 }
 
 export class ChangePasswordDto {

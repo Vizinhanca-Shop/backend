@@ -29,9 +29,11 @@ export class RolesGuard implements CanActivate {
     const decoded = jwt.verify(token)
     const user = await PrismaClient.user.findUnique({
       where: { id: decoded.id },
-      include: { role: true },
+      select: {
+        role: true,
+      },
     })
 
-    return requiredRoles.includes(user.role.name)
+    return requiredRoles.includes(user.role)
   }
 }

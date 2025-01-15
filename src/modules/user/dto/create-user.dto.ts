@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger'
 import { PartialType } from '@nestjs/swagger'
+import { Role } from '@prisma/client'
 import { IsNotEmpty, IsOptional, IsEmail, IsString } from 'class-validator'
 import { IsPhoneNumber, IsPassword, IsUnique } from 'src/custom/class-validator'
 export class CreateUserDto {
@@ -19,30 +20,12 @@ export class CreateUserDto {
   @IsPhoneNumber()
   cellphone: string
 
-  @IsOptional()
-  nationality?: string
-
   @ApiProperty({ type: 'string', format: 'binary', required: false })
   @IsOptional()
   avatar?: string
 
   @IsOptional()
-  wantToBeCalled?: string
-
-  @IsOptional()
-  roleId?: number
-
-  @IsOptional()
-  cadastur?: string
-
-  @IsOptional()
-  @ApiProperty({
-    type: 'string',
-    format: 'date-time',
-    required: false,
-    example: '2021-09-01T00:00:00.000Z',
-  })
-  cadasturAt?: string
+  role?: Role
 }
 
 export class CreateReceiptMethodDto {

@@ -6,45 +6,22 @@ import {
 import { Request, Response } from 'express'
 import { jwt } from 'src/utils'
 import PrismaClient from 'prisma/instance'
+import { Role } from '@prisma/client'
 
 interface AuthMiddlewareRequest extends Request {
   user: {
     id: number
-    roleId: number
+    role: Role
     email: string
   }
 }
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
-  async use(
-    req: AuthMiddlewareRequest,
-    res: Response,
-    next: (value?: unknown) => void,
-  ) {
-    if (req.headers.authorization?.includes('Basic')) {
-      const credentials = Buffer.from(
-        req.headers.authorization.split(' ')[1],
-        'base64',
-      ).toString()
-      if (!credentials) return next(new UnauthorizedException('Invalid token'))
-
-      const accessToken = credentials.split(':').at(1)
-
-      if (!accessToken) return next(new UnauthorizedException('Invalid token'))
-
-      const hasToken = await PrismaClient.integrations.findFirst({
-        where: { jwt: accessToken },
-      })
-      if (!hasToken?.id) return next(new UnauthorizedException('Invalid token'))
-
-      return next()
-    }
-
+  async use(req: AuthMiddlewareRequest, next: (value?: unknown) => void) {
     const bearerHeader = req.headers.authorization
     const accessToken = bearerHeader?.split(' ')[1]
     const token = accessToken ?? bearerHeader
-    if (!token && req.originalUrl.includes('auth')) return next()
 
     if (!token) {
       //TODO: Implement a better way to handle this to access public routes
@@ -56,7 +33,7 @@ export class AuthMiddleware implements NestMiddleware {
     const userAuth = await PrismaClient.user.findUnique({
       select: {
         id: true,
-        roleId: true,
+        role: true,
         email: true,
       },
       where: {

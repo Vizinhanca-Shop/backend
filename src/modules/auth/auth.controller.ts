@@ -17,9 +17,6 @@ import {
   NewPasswordDto,
 } from './dto/auth.dto'
 import { FileInterceptor } from '@nestjs/platform-express'
-import { GoogleStrategy } from './strategies/google'
-import { FacebookStrategy } from './strategies/facebook'
-import { AppleStrategy } from './strategies/apple'
 
 @ApiTags('auth')
 @Controller('auth')
@@ -43,19 +40,6 @@ export class AuthController {
   })
   signUp(@Body() data: SignUpDto, @UploadedFile() file: Express.Multer.File) {
     return this.authService.signUp(data, file)
-  }
-
-  @Post('sign-in/oauth')
-  async oAuth(
-    @Body() data: { token: string; type: 'GOOGLE' | 'APPLE' | 'FACEBOOK' },
-    @Headers('x-request-origin') headers: string,
-  ) {
-    const strategy = {
-      GOOGLE: new GoogleStrategy(),
-      FACEBOOK: new FacebookStrategy(),
-      APPLE: new AppleStrategy(),
-    }
-    return await strategy[data.type].validate(data.token, headers)
   }
 
   @Post('sign-in')

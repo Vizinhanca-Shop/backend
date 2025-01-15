@@ -22,28 +22,9 @@ export class SignUpDto {
   @IsUnique('person', 'cellphone')
   cellphone: string
 
-  @IsOptional()
-  nationality?: string
-
   @ApiProperty({ type: 'string', format: 'binary', required: false })
   @IsOptional()
   avatar?: string
-
-  @IsOptional()
-  roleId?: number
-
-  @IsOptional()
-  @IsUnique('person', 'cadastur')
-  cadastur?: string
-
-  @IsOptional()
-  @ApiProperty({
-    type: 'string',
-    format: 'date-time',
-    required: false,
-    example: '2021-09-01T00:00:00.000Z',
-  })
-  cadasturAt?: string
 }
 
 export class SignInDto {

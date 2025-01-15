@@ -7,67 +7,23 @@ import {
 import { I18nService, I18nContext } from 'nestjs-i18n'
 
 import { UserService } from '../user/user.service'
-import { encrypt, jwt, validateCPF } from 'src/utils'
+import { createRecoveryCode, encrypt, jwt, validateCPF } from 'src/utils'
 import PrismaClient from 'prisma/instance'
 import { SignUpDto, SignInDto } from './dto/auth.dto'
 import { I18nTranslations } from 'src/i18n/generated/i18n.types'
-import { Twilio } from 'src/third_party/twilio'
-import { SendGrid } from 'src/third_party/sendgrid'
-import { S3Service } from 'src/third_party/s3-bucket'
-import { defaultRoles } from 'prisma/seeds/default'
+import { Role } from '@prisma/client'
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UserService,
     private readonly i18n: I18nService<I18nTranslations>,
-    private twilio: Twilio,
-    private sendgrid: SendGrid,
-    private readonly s3Service: S3Service,
   ) {}
 
   async signIn(
     { email, password }: SignInDto,
     headers: string,
   ): Promise<signInReturnType> {
-    const socialUser = await PrismaClient.user.findUnique({
-      where: {
-        email,
-      },
-      select: {
-        password: true,
-        appleOauth: {
-          select: {
-            id: true,
-          },
-        },
-        facebookOauth: {
-          select: {
-            id: true,
-          },
-        },
-        googleOauth: {
-          select: {
-            id: true,
-          },
-        },
-      },
-    })
-
-    const isSocialLogin =
-      socialUser?.appleOauth ||
-      socialUser?.facebookOauth ||
-      socialUser?.googleOauth ||
-      socialUser?.password === null
-
-    if (isSocialLogin) {
-      throw new UnauthorizedException(
-        this.i18n.t('auth.user.social_sign_in', {
-          lang: I18nContext.current().lang,
-        }),
-      )
-    }
-
     const user = await PrismaClient.user.findUnique({
       where: {
         email,
@@ -78,21 +34,11 @@ export class AuthService {
         status: true,
         password: true,
         avatarUrl: true,
-        role: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+        role: true,
         person: {
           select: {
             name: true,
             cellphone: true,
-            birthdate: true,
-            mother_name: true,
-            nationality: true,
-            document: true,
-            wantToBeCalled: true,
           },
         },
       },
@@ -117,8 +63,8 @@ export class AuthService {
     }
 
     if (headers && headers === 'centerlight-app') {
-      if (user.role.id != 3) {
-        throw new UnauthorizedException('User is not tourist')
+      if (user.role !== Role.USER) {
+        throw new UnauthorizedException('Centerlight app is only for users')
       }
     }
 
@@ -158,29 +104,15 @@ export class AuthService {
     signupData: SignUpDto,
     file: Express.Multer.File,
   ): Promise<signUpReturnType> {
-    if (signupData?.roleId) {
-      const role = await PrismaClient.role.findFirst({
-        where: {
-          id: +signupData.roleId,
-        },
-      })
-
-      if (role.name === defaultRoles.admin.name) {
-        throw new BadRequestException('You cannot create an admin user')
-      }
-    }
-
     if (signupData?.cellphone) {
       const regex = /^(\d{2})(\d{2})(\d{8,9})$/
       const matches = signupData.cellphone.match(regex)
 
-      if (!matches) throw new BadRequestException('Invalid user phone number')
+      if (!matches) throw new BadRequestException('Número de celular inválido')
     }
 
-    if (signupData?.document && signupData.roleId != 3) {
-      const cpfIsValid = validateCPF(signupData?.document)
-      if (!cpfIsValid) throw new BadRequestException('Invalid CPF')
-    }
+    const cpfIsValid = validateCPF(signupData?.document)
+    if (!cpfIsValid) throw new BadRequestException('CPF inválido')
 
     const user = await this.usersService.create(signupData, null, null)
 
@@ -192,24 +124,24 @@ export class AuthService {
       )
     }
 
-    if (file) {
-      const uploadedImage = await this.s3Service.uploadFile(file, 'user-avatar')
-      await PrismaClient.avatar.create({
-        data: {
-          url: uploadedImage.Location,
-          key: uploadedImage.Key,
-        },
-      })
+    // if (file) {
+    //   const uploadedImage = await this.s3Service.uploadFile(file, 'user-avatar')
+    //   await PrismaClient.avatar.create({
+    //     data: {
+    //       url: uploadedImage.Location,
+    //       key: uploadedImage.Key,
+    //     },
+    //   })
 
-      await PrismaClient.user.update({
-        where: {
-          id: user.id,
-        },
-        data: {
-          avatarUrl: uploadedImage.Location,
-        },
-      })
-    }
+    //   await PrismaClient.user.update({
+    //     where: {
+    //       id: user.id,
+    //     },
+    //     data: {
+    //       avatarUrl: uploadedImage.Location,
+    //     },
+    //   })
+    // }
 
     const payload = {
       id: user.id,
@@ -232,37 +164,12 @@ export class AuthService {
           select: {
             name: true,
             cellphone: true,
-            nationality: true,
-            wantToBeCalled: true,
           },
         },
       },
     })
 
-    if (user?.role?.id === 2) {
-      return {
-        ...updatedUser,
-        ...tokens,
-      }
-    }
-
-    const createCode = async () => {
-      const code = Math.floor(100000 + Math.random() * 900000).toString()
-
-      const hasSamecode = await PrismaClient.userRecoveryCode.findUnique({
-        where: {
-          code,
-        },
-      })
-
-      if (!hasSamecode) {
-        return code
-      }
-
-      return await createCode()
-    }
-
-    const code = await createCode()
+    const code = await createRecoveryCode()
 
     const expiredAt = new Date(Date.now() + 60000 * 30)
 
@@ -270,17 +177,17 @@ export class AuthService {
       data: { code: code, expiredAt, userId: user.id },
     })
 
-    await this.sendgrid.sendEmail({
-      to: user.email,
-      subject: this.i18n.t('auth.forget_password.send_code', {
-        lang: I18nContext.current().lang,
-        args: { code },
-      }),
-      html: this.i18n.t('auth.forget_password.send_code', {
-        lang: I18nContext.current().lang,
-        args: { code },
-      }),
-    })
+    // await this.sendgrid.sendEmail({
+    //   to: user.email,
+    //   subject: this.i18n.t('auth.forget_password.send_code', {
+    //     lang: I18nContext.current().lang,
+    //     args: { code },
+    //   }),
+    //   html: this.i18n.t('auth.forget_password.send_code', {
+    //     lang: I18nContext.current().lang,
+    //     args: { code },
+    //   }),
+    // })
 
     return {
       ...updatedUser,
@@ -381,37 +288,37 @@ export class AuthService {
       },
     })
 
-    if (send_to === 'email') {
-      await this.sendgrid.sendEmail({
-        to: user.email,
-        subject: this.i18n.t('auth.forget_password.send_code', {
-          lang: locale,
-          args: { code },
-        }),
-        html: this.i18n.t('auth.forget_password.send_code', {
-          lang: locale,
-          args: { code },
-        }),
-      })
+    // if (send_to === 'email') {
+    //   await this.sendgrid.sendEmail({
+    //     to: user.email,
+    //     subject: this.i18n.t('auth.forget_password.send_code', {
+    //       lang: locale,
+    //       args: { code },
+    //     }),
+    //     html: this.i18n.t('auth.forget_password.send_code', {
+    //       lang: locale,
+    //       args: { code },
+    //     }),
+    //   })
 
-      return {
-        message: this.i18n.t('auth.forget_password.sent_email'),
-      }
-    } else if (send_to === 'sms') {
-      await this.twilio.sendSMS(
-        user.person.cellphone,
-        this.i18n.t('auth.forget_password.send_code', {
-          lang: locale,
-          args: { code },
-        }),
-      )
+    //   return {
+    //     message: this.i18n.t('auth.forget_password.sent_email'),
+    //   }
+    // } else if (send_to === 'sms') {
+    //   await this.twilio.sendSMS(
+    //     user.person.cellphone,
+    //     this.i18n.t('auth.forget_password.send_code', {
+    //       lang: locale,
+    //       args: { code },
+    //     }),
+    //   )
 
-      return {
-        message: this.i18n.t('auth.forget_password.sent_sms', {
-          lang: I18nContext.current().lang,
-        }),
-      }
-    }
+    //   return {
+    //     message: this.i18n.t('auth.forget_password.sent_sms', {
+    //       lang: I18nContext.current().lang,
+    //     }),
+    //   }
+    // }
   }
 
   async forgotPasswordCode(code: string) {
@@ -449,7 +356,7 @@ export class AuthService {
     const userCode = await PrismaClient.userRecoveryCode.findUnique({
       where: {
         code: code,
-        user: { status: 'ANALYSIS' },
+        user: { status: 'ACTIVED' },
       },
       select: {
         expiredAt: true,
@@ -561,15 +468,15 @@ export class AuthService {
       },
     })
 
-    await this.sendgrid.sendEmail({
-      to: email,
-      subject: this.i18n.t('auth.forget_password.send_code', {
-        args: { code },
-      }),
-      html: this.i18n.t('auth.forget_password.send_code', {
-        args: { code },
-      }),
-    })
+    // await this.sendgrid.sendEmail({
+    //   to: email,
+    //   subject: this.i18n.t('auth.forget_password.send_code', {
+    //     args: { code },
+    //   }),
+    //   html: this.i18n.t('auth.forget_password.send_code', {
+    //     args: { code },
+    //   }),
+    // })
   }
 
   async forgotPasswordChange(password: string, code: string) {

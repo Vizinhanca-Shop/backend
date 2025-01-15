@@ -16,16 +16,15 @@ import { SearchUserDto } from './dto/search-user.dts'
 import { encrypt } from 'src/utils/encrypt'
 import { jwt, removeInvalidValues, validateCPF } from 'src/utils'
 import { I18nTranslations } from 'src/i18n/generated/i18n.types'
-import { defaultRoles } from 'prisma/seeds/default'
-import { S3Service } from 'src/third_party/s3-bucket'
-import { UserStatus } from '@prisma/client'
+// import { S3Service } from 'src/third_party/s3-bucket'
+import { Role, UserStatus } from '@prisma/client'
 import { AuthMiddlewareRequest } from 'src/types/type'
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly i18n: I18nService<I18nTranslations>,
-    private readonly s3Service: S3Service,
+    // private readonly s3Service: S3Service,
   ) {}
 
   async create(
@@ -42,20 +41,6 @@ export class UserService {
         if (person) {
           throw new BadRequestException(
             this.i18n.t('auth.user.document_already_exist', {
-              lang: I18nContext.current().lang,
-            }),
-          )
-        }
-      }
-
-      if (createUserDto?.cadastur) {
-        const person = await PrismaClient.person.findUnique({
-          where: { cadastur: createUserDto.cadastur },
-        })
-
-        if (person) {
-          throw new BadRequestException(
-            this.i18n.t('auth.user.cadastur_already_exists', {
               lang: I18nContext.current().lang,
             }),
           )
@@ -90,14 +75,7 @@ export class UserService {
         }
       }
 
-      const adminRole = await PrismaClient.role.findFirst({
-        where: {
-          name: defaultRoles.admin.name,
-        },
-        select: { id: true },
-      })
-
-      if (createUserDto?.roleId === adminRole.id) {
+      if (createUserDto?.role === Role.ADMIN) {
         //Sign-up use this service to create a user, this is a double check to avoid a user to create an admin user
         if (!userId) {
           throw new UnauthorizedException(
@@ -110,42 +88,27 @@ export class UserService {
             id: userId,
           },
           select: {
-            role: {
-              select: {
-                id: true,
-              },
-            },
+            role: true,
           },
         })
 
-        if (user.role.id !== adminRole.id) {
+        if (user.role !== Role.ADMIN) {
           throw new UnauthorizedException(
             'User does not have permission to create an admin user',
           )
         }
       }
 
-      //added user roleId if not has roleId in createUserDto
-      if (!createUserDto?.roleId) {
-        const userRole = await PrismaClient.role.findFirst({
-          where: {
-            name: defaultRoles.user.name,
-          },
-        })
-
-        createUserDto.roleId = userRole.id
-      }
-
       const { email, password, ...personData } = createUserDto
-      delete personData.roleId
+      delete personData.role
       delete personData.avatar
 
       const user = await PrismaClient.user.create({
         data: {
           email: email,
           password: await encrypt.hash(password),
-          roleId: +createUserDto.roleId,
-          status: userId ? 'ACTIVED' : 'ANALYSIS',
+          role: createUserDto.role,
+          status: UserStatus.ACTIVED,
           person: {
             create: {
               ...personData,
@@ -155,20 +118,12 @@ export class UserService {
         select: {
           id: true,
           email: true,
-          role: {
-            select: {
-              id: true,
-              name: true,
-            },
-          },
+          role: true,
           avatarUrl: true,
           person: {
             select: {
               name: true,
               cellphone: true,
-              cadastur: true,
-              cadasturAt: true,
-              nationality: true,
             },
           },
         },
@@ -182,51 +137,43 @@ export class UserService {
         )
       }
 
-      if (file) {
-        const uploadedImage = await this.s3Service.uploadFile(
-          file,
-          'user-avatar',
-        )
-        await PrismaClient.avatar.create({
-          data: {
-            url: uploadedImage.Location,
-            key: uploadedImage.Key,
-          },
-        })
+      // if (file) {
+      //   const uploadedImage = await this.s3Service.uploadFile(
+      //     file,
+      //     'user-avatar',
+      //   )
+      //   await PrismaClient.avatar.create({
+      //     data: {
+      //       url: uploadedImage.Location,
+      //       key: uploadedImage.Key,
+      //     },
+      //   })
 
-        await PrismaClient.user.update({
-          where: {
-            id: user.id,
-          },
-          data: {
-            avatarUrl: uploadedImage.Location,
-          },
-        })
+      //   await PrismaClient.user.update({
+      //     where: {
+      //       id: user.id,
+      //     },
+      //     data: {
+      //       avatarUrl: uploadedImage.Location,
+      //     },
+      //   })
 
-        return PrismaClient.user.findFirst({
-          where: { id: user.id },
-          select: {
-            id: true,
-            email: true,
-            role: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-            avatarUrl: true,
-            person: {
-              select: {
-                name: true,
-                cellphone: true,
-                cadastur: true,
-                cadasturAt: true,
-                nationality: true,
-              },
-            },
-          },
-        })
-      }
+      //   return PrismaClient.user.findFirst({
+      //     where: { id: user.id },
+      //     select: {
+      //       id: true,
+      //       email: true,
+      //       role: true,
+      //       avatarUrl: true,
+      //       person: {
+      //         select: {
+      //           name: true,
+      //           cellphone: true,
+      //         },
+      //       },
+      //     },
+      //   })
+      // }
 
       return user
     } catch (error) {
@@ -263,17 +210,7 @@ export class UserService {
         email: true,
         createdAt: true,
         status: true,
-        tourPayment: {
-          where: {
-            status: 'PAID',
-          },
-        },
-        role: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+        role: true,
         avatar: {
           select: {
             id: true,
@@ -284,9 +221,6 @@ export class UserService {
           select: {
             name: true,
             cellphone: true,
-            cadastur: true,
-            cadasturAt: true,
-            nationality: true,
           },
         },
       },
@@ -301,8 +235,7 @@ export class UserService {
       return users
     }
 
-    const data = users.filter((user) => user?.status !== 'ANALYSIS')
-    const pages = data.length > 0 ? Math.ceil(count / limit) : 0
+    const pages = users.length > 0 ? Math.ceil(count / limit) : 0
 
     const meta = {
       nextPage: pages > page ? page + 1 : null,
@@ -312,7 +245,7 @@ export class UserService {
 
     return {
       meta,
-      data,
+      data: users,
     }
   }
 
@@ -341,12 +274,7 @@ export class UserService {
         email: true,
         status: true,
         createdAt: true,
-        role: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+        role: true,
         avatar: {
           select: {
             id: true,
@@ -357,16 +285,7 @@ export class UserService {
           select: {
             name: true,
             cellphone: true,
-            cadastur: true,
-            cadasturAt: true,
-            nationality: true,
             createdAt: true,
-          },
-        },
-        guideSummary: {
-          select: {
-            totalBalance: true,
-            totalSales: true,
           },
         },
       },
@@ -415,12 +334,7 @@ export class UserService {
       select: {
         id: true,
         email: true,
-        role: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+        role: true,
         avatar: {
           select: {
             id: true,
@@ -431,9 +345,6 @@ export class UserService {
           select: {
             name: true,
             cellphone: true,
-            cadastur: true,
-            cadasturAt: true,
-            nationality: true,
           },
         },
       },
@@ -450,7 +361,7 @@ export class UserService {
       select: {
         id: true,
         email: true,
-        roleId: true,
+        role: true,
         deletedAt: true,
       },
     })
@@ -463,16 +374,10 @@ export class UserService {
       where: { id },
       select: {
         id: true,
+        role: true,
         email: true,
         createdAt: true,
-        CustomerErrors: true,
         status: true,
-        role: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
         avatar: {
           select: {
             id: true,
@@ -483,22 +388,7 @@ export class UserService {
           select: {
             name: true,
             document: true,
-            cadastur: true,
-            birthdate: true,
             cellphone: true,
-            cadasturAt: true,
-            mother_name: true,
-            nationality: true,
-            wantToBeCalled: true,
-          },
-        },
-        customer: true,
-        receiptMethod: true,
-        customerAddress: true,
-        guideSummary: {
-          select: {
-            totalBalance: true,
-            totalSales: true,
           },
         },
       },
@@ -511,20 +401,13 @@ export class UserService {
         }),
       )
     }
-
-    return {
-      ...user,
-      receiptMethod: user.receiptMethod ? user.receiptMethod : null,
-    }
+    return user
   }
 
   async findAllRoles() {
-    return await PrismaClient.role.findMany({
-      select: {
-        id: true,
-        name: true,
-      },
-    })
+    const roles = Role
+
+    return Object.keys(roles).map((key) => roles[key])
   }
 
   async update(
@@ -542,39 +425,15 @@ export class UserService {
       )
     }
 
-    const { email, roleId, ...personData } = updateUserDto
+    const { email, role, ...personData } = updateUserDto
     const filtredPersonData = removeInvalidValues(personData)
+    const abc = role
+    if (role) {
+      const adminRole = Role.ADMIN
 
-    if (userExists?.CustomerErrors?.length) {
-      await PrismaClient.customerErrors.deleteMany({
-        where: { userId: userExists.id },
-      })
-    }
-
-    if (roleId) {
-      const adminRole = await PrismaClient.role.findFirst({
-        where: {
-          name: defaultRoles.admin.name,
-        },
-      })
-
-      if (roleId === adminRole.id && userExists.role.id !== adminRole.id) {
+      if (role === adminRole && userExists.role !== adminRole) {
         throw new UnauthorizedException(
           this.i18n.t('auth.user.permission_denied', {
-            lang: I18nContext.current().lang,
-          }),
-        )
-      }
-
-      const role = await PrismaClient.role.findFirst({
-        where: {
-          id: +roleId,
-        },
-      })
-
-      if (!role) {
-        throw new BadRequestException(
-          this.i18n.t('auth.user.role_not_found', {
             lang: I18nContext.current().lang,
           }),
         )
@@ -585,16 +444,14 @@ export class UserService {
           id: +id,
         },
         data: {
-          roleId: +roleId,
+          role,
         },
       })
     }
 
     if (personData?.document) {
-      if (userExists.role.id === 2 || userExists.role.id === 1) {
-        const cpfIsValid = validateCPF(updateUserDto.document)
-        if (!cpfIsValid) throw new BadRequestException('Cpf invalido')
-      }
+      const cpfIsValid = validateCPF(updateUserDto.document)
+      if (!cpfIsValid) throw new BadRequestException('Cpf invalido')
 
       const person = await PrismaClient.person.findUnique({
         where: {
@@ -610,27 +467,6 @@ export class UserService {
       if (person) {
         throw new BadRequestException(
           this.i18n.t('auth.user.document_already_exist', {
-            lang: I18nContext.current().lang,
-          }),
-        )
-      }
-    }
-
-    if (personData?.cadastur) {
-      const person = await PrismaClient.person.findUnique({
-        where: {
-          user: {
-            id: {
-              not: +id,
-            },
-          },
-          cadastur: updateUserDto.cadastur,
-        },
-      })
-
-      if (person) {
-        throw new BadRequestException(
-          this.i18n.t('auth.user.cadastur_already_exists', {
             lang: I18nContext.current().lang,
           }),
         )
@@ -684,10 +520,10 @@ export class UserService {
 
     let uploadResponse = null
 
-    if (file) {
-      const uploadedImage = await this.s3Service.uploadFile(file, 'user-avatar')
-      uploadResponse = uploadedImage
-    }
+    // if (file) {
+    //   const uploadedImage = await this.s3Service.uploadFile(file, 'user-avatar')
+    //   uploadResponse = uploadedImage
+    // }
 
     delete filtredPersonData.avatar
 
@@ -744,27 +580,17 @@ export class UserService {
       select: {
         id: true,
         email: true,
-        role: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
+        role: true,
         avatar: {
           select: {
             id: true,
             url: true,
           },
         },
-        guideSummary: true,
         person: {
           select: {
             name: true,
             cellphone: true,
-            cadastur: true,
-            cadasturAt: true,
-            nationality: true,
-            wantToBeCalled: true,
           },
         },
       },
@@ -784,7 +610,6 @@ export class UserService {
         person: {
           update: {
             cellphone: `${id}@deleted-cellphone`,
-            cadastur: `${id}@deleted-cadastur`,
           },
         },
       },
@@ -872,174 +697,5 @@ export class UserService {
         lang: I18nContext.current().lang,
       }),
     }
-  }
-
-  async createReceiptMethod(
-    data: CreateReceiptMethodDto,
-    request: AuthMiddlewareRequest,
-  ) {
-    try {
-      const authenticatedUser = request.user
-
-      const bank = await PrismaClient.banks.findFirst({
-        where: { cod_compe: data.bankCompeId },
-      })
-
-      if (authenticatedUser.roleId != 1 && data?.userId) {
-        if (Number(authenticatedUser?.id) != Number(data?.userId)) {
-          throw new BadRequestException(
-            this.i18n.t('auth.user.permission_denied', {
-              lang: I18nContext.current().lang,
-            }),
-          )
-        }
-      }
-
-      if (!bank) {
-        throw new BadRequestException(
-          this.i18n.t('payment.bank.code_compe_not_found', {
-            lang: I18nContext.current().lang,
-          }),
-        )
-      }
-
-      const receiptMethod = await PrismaClient.receiptMethod.findFirst({
-        where: { userId: Number(data.userId) || +request.user.id },
-      })
-
-      if (receiptMethod) {
-        throw new BadRequestException(
-          this.i18n.t('auth.user.receipt_method_already_created', {
-            lang: I18nContext.current().lang,
-          }),
-        )
-      }
-
-      return await PrismaClient.receiptMethod.create({
-        data: {
-          agency: data.agency,
-          account: data.account,
-          receiver: data.receiver,
-          accountDigit: data.accountDigit,
-          bank: { connect: { cod_compe: bank.cod_compe } },
-          ...(data.agencyDigit && { agencyDigit: data.agencyDigit }),
-          user: {
-            connect: { id: Number(data?.userId) || Number(+request.user.id) },
-          },
-        },
-      })
-    } catch (error) {
-      throw new BadRequestException({ message: error.message, error })
-    }
-  }
-
-  async editReceiptMethod(
-    data: CreateReceiptMethodDto,
-    request: AuthMiddlewareRequest,
-  ) {
-    try {
-      const authenticatedUser = request.user
-
-      const bank = await PrismaClient.banks.findFirst({
-        where: { cod_compe: data.bankCompeId },
-      })
-
-      if (authenticatedUser.roleId != 1 && data?.userId) {
-        if (Number(authenticatedUser?.id) != Number(data?.userId)) {
-          throw new BadRequestException(
-            this.i18n.t('auth.user.permission_denied', {
-              lang: I18nContext.current().lang,
-            }),
-          )
-        }
-      }
-
-      if (!bank) {
-        throw new BadRequestException(
-          this.i18n.t('payment.bank.code_compe_not_found', {
-            lang: I18nContext.current().lang,
-          }),
-        )
-      }
-
-      const receiptMethod = await PrismaClient.receiptMethod.findFirst({
-        where: { userId: Number(data.userId) || +request.user.id },
-      })
-
-      await PrismaClient.customerErrors.deleteMany({
-        where: { userId: +request.user.id },
-      })
-
-      if (!receiptMethod) {
-        throw new BadRequestException(
-          this.i18n.t('auth.user.receipt_method_not_created', {
-            lang: I18nContext.current().lang,
-          }),
-        )
-      }
-
-      await PrismaClient.receiptMethod.update({
-        where: { id: receiptMethod.id },
-        data: {
-          agency: data.agency,
-          updatedAt: new Date(),
-          createdAt: new Date(),
-          account: data.account,
-          receiver: data.receiver,
-          agencyDigit: data.agencyDigit,
-          accountDigit: data.accountDigit,
-          bank: { connect: { cod_compe: bank.cod_compe } },
-        },
-      })
-    } catch (error) {
-      throw new BadRequestException({ message: error.message, error })
-    }
-  }
-
-  async createAddressInfo(addressInfoDto: CreateAddressInfo, userId: number) {
-    const userAddress = await PrismaClient.customerAddress.findFirst({
-      where: { userId },
-    })
-
-    if (userAddress) {
-      throw new BadRequestException('User address already added')
-    }
-
-    const { line, ...rest } = addressInfoDto
-    return await PrismaClient.customerAddress.create({
-      data: {
-        ...rest,
-        line_1: line,
-        user: { connect: { id: userId } },
-      },
-    })
-  }
-
-  async updateAddressInfo(addressInfoDto: UpdateAddressInfo, userId: number) {
-    const userAddress = await PrismaClient.user.findUnique({
-      where: { id: userId },
-      include: { customerAddress: true },
-    })
-
-    if (!userAddress.customerAddress) {
-      throw new BadRequestException('User address not registered')
-    }
-
-    await PrismaClient.customerErrors.deleteMany({ where: { userId: userId } })
-
-    return await PrismaClient.customerAddress.update({
-      where: { id: userAddress.customerAddress.id, user: { id: userId } },
-      data: {
-        ...(addressInfoDto.city && { city: addressInfoDto.city }),
-        ...(addressInfoDto.country && { country: addressInfoDto.country }),
-        ...(addressInfoDto.neighborhood && {
-          neighborhood: addressInfoDto.neighborhood,
-        }),
-        ...(addressInfoDto.state && { state: addressInfoDto.state }),
-        ...(addressInfoDto.street && { street: addressInfoDto.street }),
-        ...(addressInfoDto.zip_code && { zip_code: addressInfoDto.zip_code }),
-        ...(addressInfoDto.line && { line_1: addressInfoDto.line }),
-      },
-    })
   }
 }
