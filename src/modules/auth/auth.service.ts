@@ -38,7 +38,6 @@ export class AuthService {
         person: {
           select: {
             name: true,
-            cellphone: true,
           },
         },
       },
@@ -104,13 +103,6 @@ export class AuthService {
     signupData: SignUpDto,
     file: Express.Multer.File,
   ): Promise<signUpReturnType> {
-    if (signupData?.cellphone) {
-      const regex = /^(\d{2})(\d{2})(\d{8,9})$/
-      const matches = signupData.cellphone.match(regex)
-
-      if (!matches) throw new BadRequestException('Número de celular inválido')
-    }
-
     const cpfIsValid = validateCPF(signupData?.document)
     if (!cpfIsValid) throw new BadRequestException('CPF inválido')
 
@@ -163,7 +155,6 @@ export class AuthService {
         person: {
           select: {
             name: true,
-            cellphone: true,
           },
         },
       },
@@ -261,7 +252,7 @@ export class AuthService {
     }
 
     const createCode = async () => {
-      const code = Math.floor(100000 + Math.random() * 900000).toString()
+      const code = Math.floor(100000 + Math.random() * 900000)
 
       const hasSamecode = await PrismaClient.userRecoveryCode.findUnique({
         where: {
@@ -282,7 +273,7 @@ export class AuthService {
 
     await PrismaClient.userRecoveryCode.create({
       data: {
-        code: code,
+        code: +code,
         expiredAt,
         userId: user.id,
       },
@@ -324,7 +315,7 @@ export class AuthService {
   async forgotPasswordCode(code: string) {
     const userCode = await PrismaClient.userRecoveryCode.findUnique({
       where: {
-        code: code,
+        code: +code,
       },
       select: {
         userId: true,
@@ -355,7 +346,7 @@ export class AuthService {
   async validateUserWithCode(code: string) {
     const userCode = await PrismaClient.userRecoveryCode.findUnique({
       where: {
-        code: code,
+        code: +code,
         user: { status: 'ACTIVED' },
       },
       select: {
@@ -483,7 +474,7 @@ export class AuthService {
     try {
       const userCode = await PrismaClient.userRecoveryCode.findUnique({
         where: {
-          code: code,
+          code: +code,
         },
         select: {
           userId: true,

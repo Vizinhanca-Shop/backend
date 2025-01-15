@@ -33,7 +33,6 @@ export class AuthController {
         id: 1,
         email: 'user@centerlight.com',
         name: 'User',
-        cellphone: '5548981726354',
         password: '123@456',
       },
     },
@@ -55,7 +54,6 @@ export class AuthController {
         },
         person: {
           name: 'User',
-          cellphone: '5548981726354',
         },
         token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
         refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',

@@ -21,12 +21,7 @@ import {
   ApiQuery,
 } from '@nestjs/swagger'
 import { UserService } from './user.service'
-import {
-  CreateAddressInfo,
-  CreateReceiptMethodDto,
-  CreateUserDto,
-  UpdateAddressInfo,
-} from './dto/create-user.dto'
+import { CreateUserDto } from './dto/create-user.dto'
 import { ChangePasswordDto, UpdateUserDto } from './dto/update-user.dto'
 import { RolesGuard } from 'src/guard/role.guard'
 import { Roles } from 'src/custom/decorators/roles.decorator'
@@ -62,9 +57,6 @@ export class UserController {
         },
         person: {
           name: 'User',
-          cellphone: '5548981726354',
-          cadastur: '123456',
-          cadasturAt: '2021-09-01T00:00:00.000Z',
         },
       },
     },

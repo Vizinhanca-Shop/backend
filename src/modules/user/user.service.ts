@@ -5,12 +5,7 @@ import {
 } from '@nestjs/common'
 import { I18nService, I18nContext } from 'nestjs-i18n'
 import PrismaClient from 'prisma/instance'
-import {
-  CreateAddressInfo,
-  CreateReceiptMethodDto,
-  CreateUserDto,
-  UpdateAddressInfo,
-} from './dto/create-user.dto'
+import { CreateUserDto } from './dto/create-user.dto'
 import { ChangePasswordDto, UpdateUserDto } from './dto/update-user.dto'
 import { SearchUserDto } from './dto/search-user.dts'
 import { encrypt } from 'src/utils/encrypt'
@@ -18,7 +13,6 @@ import { jwt, removeInvalidValues, validateCPF } from 'src/utils'
 import { I18nTranslations } from 'src/i18n/generated/i18n.types'
 // import { S3Service } from 'src/third_party/s3-bucket'
 import { Role, UserStatus } from '@prisma/client'
-import { AuthMiddlewareRequest } from 'src/types/type'
 
 @Injectable()
 export class UserService {
@@ -55,20 +49,6 @@ export class UserService {
         if (user) {
           throw new BadRequestException(
             this.i18n.t('auth.user.email_already_exists', {
-              lang: I18nContext.current().lang,
-            }),
-          )
-        }
-      }
-
-      if (createUserDto?.cellphone) {
-        const person = await PrismaClient.person.findUnique({
-          where: { cellphone: createUserDto.cellphone },
-        })
-
-        if (person) {
-          throw new BadRequestException(
-            this.i18n.t('auth.user.cellphone_already_exists', {
               lang: I18nContext.current().lang,
             }),
           )
@@ -123,7 +103,6 @@ export class UserService {
           person: {
             select: {
               name: true,
-              cellphone: true,
             },
           },
         },
@@ -168,7 +147,6 @@ export class UserService {
       //       person: {
       //         select: {
       //           name: true,
-      //           cellphone: true,
       //         },
       //       },
       //     },
@@ -220,7 +198,6 @@ export class UserService {
         person: {
           select: {
             name: true,
-            cellphone: true,
           },
         },
       },
@@ -284,7 +261,6 @@ export class UserService {
         person: {
           select: {
             name: true,
-            cellphone: true,
             createdAt: true,
           },
         },
@@ -344,7 +320,6 @@ export class UserService {
         person: {
           select: {
             name: true,
-            cellphone: true,
           },
         },
       },
@@ -388,7 +363,6 @@ export class UserService {
           select: {
             name: true,
             document: true,
-            cellphone: true,
           },
         },
       },
@@ -492,32 +466,6 @@ export class UserService {
       }
     }
 
-    if (personData?.cellphone) {
-      const regex = /^(\d{2})(\d{2})(\d{8,9})$/
-      const matches = personData?.cellphone.match(regex)
-
-      if (!matches) throw new BadRequestException('Invalid user phone number')
-
-      const person = await PrismaClient.person.findUnique({
-        where: {
-          user: {
-            id: {
-              not: +id,
-            },
-          },
-          cellphone: updateUserDto.cellphone?.replace(/\D/g, ''),
-        },
-      })
-
-      if (person) {
-        throw new BadRequestException(
-          this.i18n.t('auth.user.cellphone_already_exists', {
-            lang: I18nContext.current().lang,
-          }),
-        )
-      }
-    }
-
     let uploadResponse = null
 
     // if (file) {
@@ -581,6 +529,7 @@ export class UserService {
         id: true,
         email: true,
         role: true,
+        status: true,
         avatar: {
           select: {
             id: true,
@@ -590,7 +539,13 @@ export class UserService {
         person: {
           select: {
             name: true,
-            cellphone: true,
+            birthdate: true,
+            canac: true,
+            city: true,
+            document: true,
+            cityId: true,
+            stateId: true,
+            isPilot: true,
           },
         },
       },
@@ -609,7 +564,9 @@ export class UserService {
         email: `${id}@deleted-account.com`,
         person: {
           update: {
-            cellphone: `${id}@deleted-cellphone`,
+            name: `${id}@deleted-name`,
+            document: `${id}@deleted-document`,
+            canac: `${id}@deleted-canac`,
           },
         },
       },

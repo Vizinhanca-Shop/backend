@@ -10,7 +10,7 @@ services:
       dockerfile: ./registry/development/Dockerfile
       context: ./
     volumes:
-      - './backend:/usr/src/backend'
+      - './:/usr/src/'
     command: 'yarn start:dev --host'
     env_file:
       - .env
@@ -30,9 +30,7 @@ services:
       HASH_SALT: '${HASH_SALT}'
 
   postgres:
-    depends_on:
-      - traefik
-    container_name: '${POSTGRES_HOST}'
+    container_name: '${POSTGRES_DB}'
     image: postgres
     restart: always
     environment:

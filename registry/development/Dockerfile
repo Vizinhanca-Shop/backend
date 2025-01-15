@@ -1,10 +1,12 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
 WORKDIR /usr/src/app
 
-COPY . .
+COPY package.json ./
 
-RUN npm install -g yarn --force
+COPY ./ ./
+
+
+
 RUN yarn install
-RUN yarn build
 

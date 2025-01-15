@@ -19,20 +19,43 @@ enum Role {
   USER
 }
 
+model State {
+  id     Int      @id @default(autoincrement())
+  name   String   @unique
+  code   String   @unique
+  City   City[]
+  Person Person[]
+
+  @@map("state")
+}
+
+model City {
+  id            Int      @id @default(autoincrement())
+  name          String
+  latLong       String
+  name_unaccent String?
+  stateId       Int
+  state         State    @relation(fields: [stateId], references: [id])
+  Person        Person[]
+
+  @@map("city")
+}
+
 model User {
-  id               Int               @id @default(autoincrement())
-  email            String            @unique
-  password         String?
-  avatarUrl        String?           @unique
-  avatar           Avatar?           @relation(fields: [avatarUrl], references: [url])
-  role             Role              @default(USER)
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
-  deletedAt        DateTime?
-  person           Person?
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
+  password  String?
+  avatarUrl String?   @unique
+  avatar    Avatar?   @relation(fields: [avatarUrl], references: [url])
+  role      Role      @default(USER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
   userRecoveryCode userRecoveryCode?
   session          Session?
   status           UserStatus        @default(ACTIVED)
+  person           Person?
 
   @@map("users")
 }
@@ -42,8 +65,14 @@ model Person {
   userId    Int       @unique
   user      User      @relation(fields: [userId], references: [id])
   name      String
-  document  String?   @unique
-  cellphone String?   @unique
+  canac     String?   @unique
+  document  String    @unique
+  birthdate DateTime
+  isPilot   Boolean   @default(false)
+  stateId   Int
+  state     State     @relation(fields: [stateId], references: [id])
+  cityId    Int
+  city      City      @relation(fields: [cityId], references: [id])
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?

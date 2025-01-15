@@ -14,13 +14,12 @@ export class SignUpDto {
   @IsNotEmpty()
   name: string
 
+  @IsNotEmpty()
+  birthdate: Date
+
   @IsOptional()
   @IsUnique('person', 'document')
   document?: string
-
-  @IsPhoneNumber()
-  @IsUnique('person', 'cellphone')
-  cellphone: string
 
   @ApiProperty({ type: 'string', format: 'binary', required: false })
   @IsOptional()

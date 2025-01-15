@@ -13,10 +13,6 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsOptional()
   name?: string
 
-  @IsPhoneNumber()
-  @IsOptional()
-  cellphone?: string
-
   @ApiProperty({ type: 'string', format: 'binary', required: false })
   @IsOptional()
   avatar?: string
