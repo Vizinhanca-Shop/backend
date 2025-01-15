@@ -24,6 +24,12 @@ export class SignUpDto {
   @ApiProperty({ type: 'string', format: 'binary', required: false })
   @IsOptional()
   avatar?: string
+
+  @IsNotEmpty()
+  stateId: number
+
+  @IsNotEmpty()
+  cityId: number
 }
 
 export class SignInDto {

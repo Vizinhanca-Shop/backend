@@ -91,7 +91,11 @@ export class UserService {
           status: UserStatus.ACTIVED,
           person: {
             create: {
-              ...personData,
+              name: personData.name,
+              birthdate: personData.birthdate,
+              document: personData.document,
+              state: { connect: { id: personData.stateId } },
+              city: { connect: { id: personData.cityId } },
             },
           },
         },

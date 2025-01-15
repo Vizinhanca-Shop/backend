@@ -23,8 +23,8 @@ model State {
   id     Int      @id @default(autoincrement())
   name   String   @unique
   code   String   @unique
-  City   City[]
-  Person Person[]
+  city   City[]
+  person Person[]
 
   @@map("state")
 }
@@ -36,7 +36,7 @@ model City {
   name_unaccent String?
   stateId       Int
   state         State    @relation(fields: [stateId], references: [id])
-  Person        Person[]
+  person        Person[]
 
   @@map("city")
 }

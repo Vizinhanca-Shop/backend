@@ -162,11 +162,29 @@ const cities = async () => {
     })
   }
 
-  await createCsvPipeline(handleData, 'city_brazil.csv')
+  await createCsvPipeline(handleData, './csv/city_brazil.csv')
+}
+
+const removeData = async () => {
+  await prisma.city.deleteMany({
+    where: {
+      id: {
+        gt: 0,
+      },
+    },
+  })
+  await prisma.state.deleteMany({
+    where: {
+      id: {
+        gt: 0,
+      },
+    },
+  })
 }
 
 const runSeeds = async () => {
   try {
+    await removeData()
     await prisma.state.createMany({ data: brazilStates })
     await cities()
     await users()

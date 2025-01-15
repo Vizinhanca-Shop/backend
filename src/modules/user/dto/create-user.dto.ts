@@ -26,4 +26,10 @@ export class CreateUserDto {
 
   @IsOptional()
   role?: Role
+
+  @IsNotEmpty()
+  stateId: number
+
+  @IsNotEmpty()
+  cityId: number
 }

@@ -17,7 +17,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "seed": "ts-node prisma/seeds/index.ts",
+    "seed": "ts-node prisma/seed/index.ts",
     "seed:cities": "ts-node prisma/seeds/add_city_unaccent_name.ts",
     "generate:i18n-types": "ts-node ./src/i18n/generate-i18n-types.ts"
   },
@@ -94,7 +94,7 @@
   "resolutions": {
     "glob": "^9.0.0",
     "wrap-ansi": "7.0.0",
-  "string-width": "4.1.0"
+    "string-width": "4.1.0"
   },
   "jest": {
     "moduleFileExtensions": [
