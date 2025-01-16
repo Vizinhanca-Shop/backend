@@ -128,6 +128,22 @@ export class AuthService {
   ): Promise<UserCreateResponseDTO> {
     const user = await this.usersService.create(signupData, null, file)
 
+    const city = await prisma.city.findFirst({
+      where: {
+        id: signupData.cityId,
+        stateId: signupData.stateId,
+      },
+      select: {
+        id: true,
+      },
+    })
+
+    if (!city) {
+      throw new BadRequestException(
+        'Cidade não corresponde ao estado selecionado',
+      )
+    }
+
     if (!user) {
       throw new BadRequestException(
         this.i18n.t('auth.signup.error', {

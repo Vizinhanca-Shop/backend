@@ -5,6 +5,7 @@ import {
   IsEmail,
   IsBoolean,
   IsNumber,
+  Validate,
 } from 'class-validator'
 import { IsPassword, IsUnique } from 'src/custom/class-validator'
 import { IsCpf } from 'src/custom/class-validator/isCpf'

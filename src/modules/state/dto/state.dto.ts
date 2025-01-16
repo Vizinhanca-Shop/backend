@@ -3,23 +3,23 @@ import { ApiProperty } from '@nestjs/swagger'
 
 export class CreateStateDTO {
   @IsString()
-  @ApiProperty({ example: 'California' })
+  @ApiProperty({ example: 'Santa catarina' })
   name: string
 
   @IsString()
-  @ApiProperty({ example: 'CA' })
+  @ApiProperty({ example: 'SC' })
   code: string
 }
 
 export class UpdateStateDTO {
   @IsOptional()
   @IsString()
-  @ApiProperty({ example: 'California', required: false })
+  @ApiProperty({ example: 'Santa Catarina', required: false })
   name?: string
 
   @IsOptional()
   @IsString()
-  @ApiProperty({ example: 'CA', required: false })
+  @ApiProperty({ example: 'SC', required: false })
   code?: string
 }
 
@@ -29,10 +29,10 @@ export class StateResponseDTO {
   id: number
 
   @IsString()
-  @ApiProperty({ example: 'California' })
+  @ApiProperty({ example: 'Santa catarina' })
   name: string
 
   @IsString()
-  @ApiProperty({ example: 'CA' })
+  @ApiProperty({ example: 'SC' })
   code: string
 }
