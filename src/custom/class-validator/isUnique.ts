@@ -5,7 +5,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator'
-import Prisma from 'prisma'
+import prisma from 'prisma'
 
 @ValidatorConstraint({ async: true })
 @Injectable()
@@ -13,7 +13,7 @@ export class IsUniqueConstraint implements ValidatorConstraintInterface {
   async validate(value: any, args: any) {
     const [model, field] = args.constraints as string[]
 
-    const count = await Prisma[model].count({
+    const count = await prisma[model].count({
       where: {
         [field]: value,
       },

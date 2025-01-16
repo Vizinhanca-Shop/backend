@@ -4,7 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common'
 import { I18nService, I18nContext } from 'nestjs-i18n'
-import Prisma from 'prisma'
+import prisma from 'prisma'
 import { CreateUserDto } from './dto/user.dto'
 import { ChangePasswordDto, UpdateUserDto, SearchUserDto } from './dto/user.dto'
 import { encrypt } from 'src/utils/encrypt'
@@ -27,7 +27,7 @@ export class UserService {
   ) {
     try {
       if (createUserDto?.cpf) {
-        const person = await Prisma.person.findUnique({
+        const person = await prisma.person.findUnique({
           where: { cpf: createUserDto.cpf },
         })
 
@@ -41,7 +41,7 @@ export class UserService {
       }
 
       if (createUserDto?.email) {
-        const user = await Prisma.user.findUnique({
+        const user = await prisma.user.findUnique({
           where: { email: createUserDto.email },
         })
 
@@ -62,7 +62,7 @@ export class UserService {
           )
         }
 
-        const user = await Prisma.user.findUnique({
+        const user = await prisma.user.findUnique({
           where: {
             id: userId,
           },
@@ -82,7 +82,7 @@ export class UserService {
       delete personData.role
       delete personData.avatar
 
-      const user = await Prisma.user.create({
+      const user = await prisma.user.create({
         data: {
           email: email,
           password: await encrypt.hash(password),
@@ -125,7 +125,7 @@ export class UserService {
 
         console.log({ url })
 
-        return await Prisma.user.update({
+        return await prisma.user.update({
           where: {
             id: user.id,
           },
@@ -159,11 +159,11 @@ export class UserService {
       }
     }
 
-    const count = await Prisma.user.count({
+    const count = await prisma.user.count({
       where: filters,
     })
 
-    const users = await Prisma.user.findMany({
+    const users = await prisma.user.findMany({
       where: filters,
       select: {
         id: true,
@@ -222,7 +222,7 @@ export class UserService {
       }
     }
 
-    const users = await Prisma.user.findMany({
+    const users = await prisma.user.findMany({
       where: {
         ...filters,
         role: { id: 2 },
@@ -272,7 +272,7 @@ export class UserService {
       )
     }
 
-    const user = await Prisma.user.update({
+    const user = await prisma.user.update({
       where: {
         id: +id,
       },
@@ -287,7 +287,7 @@ export class UserService {
   }
 
   async findOneByEmail(email: string) {
-    const user = await Prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { email, deletedAt: null },
       select: {
         id: true,
@@ -313,7 +313,7 @@ export class UserService {
   async findOneByToken(token: string) {
     const { id } = jwt.verify(token)
 
-    const user = await Prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id, deletedAt: null },
       select: {
         id: true,
@@ -327,7 +327,7 @@ export class UserService {
   }
 
   async findOneById(id: number) {
-    const user = await Prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id },
       select: {
         id: true,
@@ -395,7 +395,7 @@ export class UserService {
         )
       }
 
-      await Prisma.user.update({
+      await prisma.user.update({
         where: {
           id: +id,
         },
@@ -409,7 +409,7 @@ export class UserService {
       const cpfIsValid = validateCPF(updateUserDto.cpf)
       if (!cpfIsValid) throw new BadRequestException('Cpf invalido')
 
-      const person = await Prisma.person.findUnique({
+      const person = await prisma.person.findUnique({
         where: {
           user: {
             id: {
@@ -430,7 +430,7 @@ export class UserService {
     }
 
     if (email) {
-      const user = await Prisma.user.findUnique({
+      const user = await prisma.user.findUnique({
         where: {
           email,
           NOT: {
@@ -457,7 +457,7 @@ export class UserService {
 
     delete filtredPersonData.avatar
 
-    const updatePerson = await Prisma.person.update({
+    const updatePerson = await prisma.person.update({
       where: {
         userId: +id,
       },
@@ -500,7 +500,7 @@ export class UserService {
 
     const filtredUserData = removeInvalidValues(userData)
 
-    const updatedUser = await Prisma.user.update({
+    const updatedUser = await prisma.user.update({
       where: {
         id: +id,
       },
@@ -537,7 +537,7 @@ export class UserService {
   }
 
   async remove(id: number) {
-    const user = await Prisma.user.update({
+    const user = await prisma.user.update({
       where: {
         id: +id,
       },
@@ -566,7 +566,7 @@ export class UserService {
     if (user?.person?.cpf) {
       const maskDocument = `${id}@deleted-${user?.person?.cpf?.substring(0, 2)}.xxx.xxx-${user?.person?.cpf?.substring(8, 10)}`
 
-      await Prisma.person.update({
+      await prisma.person.update({
         where: {
           id: user.person.id,
         },
@@ -592,7 +592,7 @@ export class UserService {
   }
 
   async changePassword(id: number, data: ChangePasswordDto) {
-    const checkPassword = await Prisma.user.findUnique({
+    const checkPassword = await prisma.user.findUnique({
       where: {
         id: +id,
       },
@@ -614,7 +614,7 @@ export class UserService {
       )
     }
 
-    const user = await Prisma.user.update({
+    const user = await prisma.user.update({
       where: {
         id: +id,
       },

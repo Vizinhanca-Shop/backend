@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common'
 import { Request } from 'express'
 import { jwt } from 'src/utils'
-import Prisma from 'prisma'
+import prisma from 'prisma'
 import { Role } from '@prisma/client'
 
 interface AuthMiddlewareRequest extends Request {
@@ -38,7 +38,7 @@ export class AuthMiddleware implements NestMiddleware {
 
     const info = jwt.verify(token)
 
-    const userAuth = await Prisma.user.findUnique({
+    const userAuth = await prisma.user.findUnique({
       select: {
         id: true,
         role: true,

@@ -1,11 +1,11 @@
-import { Prisma, Role } from '@prisma/client'
+import { PrismaClient, Role } from '@prisma/client'
 import { encrypt } from '../../src/utils/encrypt'
 import { brazilStates, defaultUsers } from './default'
 import fs from 'fs'
 import path from 'path'
 import { parse } from 'csv'
 import { pipeline } from 'stream/promises'
-const prisma = new Prisma()
+const prisma = new PrismaClient()
 
 function removeAccents(str) {
   return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '')

@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing'
-import { Prisma } from '@prisma/client'
+import { prisma } from '@prisma/client'
 import { DeepMockProxy } from 'jest-mock-extended'
 import { AuthService } from './auth.service'
 import { UserService } from '../user/user.service'
@@ -16,7 +16,7 @@ describe('AuthService', () => {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let userService: UserService
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  let prisma: DeepMockProxy<typeof Prisma> | any
+  let prisma: DeepMockProxy<typeof prisma> | any
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let i18n: I18nService<I18nTranslations>
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -38,8 +38,8 @@ describe('AuthService', () => {
           },
         },
         {
-          provide: Prisma,
-          useValue: Prisma,
+          provide: prisma,
+          useValue: prisma,
         },
         {
           provide: Twilio,
@@ -63,7 +63,7 @@ describe('AuthService', () => {
     }).compile()
 
     service = module.get<AuthService>(AuthService)
-    prisma = module.get<DeepMockProxy<typeof Prisma>>(Prisma as any)
+    prisma = module.get<DeepMockProxy<typeof prisma>>(prisma as any)
     userService = module.get<UserService>(UserService)
     i18n = module.get<I18nService<I18nTranslations>>(I18nService)
     twilio = module.get<Twilio>(Twilio)

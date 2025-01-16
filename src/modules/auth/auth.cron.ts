@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common'
 import { Cron, CronExpression } from '@nestjs/schedule'
-import Prisma from 'prisma'
+import prisma from 'prisma'
 
 @Injectable()
 export class AuthCron {

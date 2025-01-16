@@ -1,4 +1,4 @@
-import Prisma from 'prisma'
+import prisma from 'prisma'
 export * from './encrypt'
 export { default as jwt } from './jwt'
 export * from './regex'
@@ -41,7 +41,7 @@ export const createRecoveryCode = async () => {
 
   while (retries < maxRetries) {
     code = Math.floor(100000 + Math.random() * 900000)
-    const exists = await Prisma.userRecoveryCode.findFirst({
+    const exists = await prisma.userRecoveryCode.findFirst({
       where: { code },
     })
 

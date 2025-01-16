@@ -8,7 +8,7 @@ import { I18nService, I18nContext } from 'nestjs-i18n'
 
 import { UserService } from '../user/user.service'
 import { createRecoveryCode, encrypt, jwt } from 'src/utils'
-import Prisma from 'prisma'
+import prisma from 'prisma'
 import {
   SignUpDto,
   SignInDto,
@@ -29,7 +29,7 @@ export class AuthService {
     { email, password }: SignInDto,
     headers: string,
   ): Promise<UserCreateResponseDTO> {
-    const user = await Prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: {
         email,
       },
@@ -98,7 +98,7 @@ export class AuthService {
 
     const { exp } = jwt.verify(tokens.token)
 
-    await Prisma.session.upsert({
+    await prisma.session.upsert({
       where: {
         userId: user.id,
       },
@@ -142,7 +142,7 @@ export class AuthService {
 
     const tokens = await jwt.sign(payload)
 
-    const updatedUser = await Prisma.user.findFirst({
+    const updatedUser = await prisma.user.findFirst({
       where: {
         id: user.id,
       },
@@ -184,7 +184,7 @@ export class AuthService {
   }
 
   async signOut(userId: number) {
-    await Prisma.session.deleteMany({
+    await prisma.session.deleteMany({
       where: {
         userId,
       },
@@ -233,7 +233,7 @@ export class AuthService {
       )
     }
 
-    const hasCode = await Prisma.userRecoveryCode.findUnique({
+    const hasCode = await prisma.userRecoveryCode.findUnique({
       where: {
         userId: user.id,
       },
@@ -249,7 +249,7 @@ export class AuthService {
         }),
       }
     } else if (hasCode?.expiredAt < new Date()) {
-      await Prisma.userRecoveryCode.delete({
+      await prisma.userRecoveryCode.delete({
         where: {
           userId: user.id,
         },
@@ -260,7 +260,7 @@ export class AuthService {
 
     const expiredAt = new Date(Date.now() + 60000 * 30)
 
-    await Prisma.userRecoveryCode.create({
+    await prisma.userRecoveryCode.create({
       data: {
         code: +code,
         expiredAt,
@@ -270,7 +270,7 @@ export class AuthService {
   }
 
   async forgotPasswordCode(code: string) {
-    const userCode = await Prisma.userRecoveryCode.findUnique({
+    const userCode = await prisma.userRecoveryCode.findUnique({
       where: {
         code: +code,
       },
@@ -301,7 +301,7 @@ export class AuthService {
   }
 
   async validateUserWithCode(code: string) {
-    const userCode = await Prisma.userRecoveryCode.findUnique({
+    const userCode = await prisma.userRecoveryCode.findUnique({
       where: {
         code: +code,
         user: { status: 'ACTIVED' },
@@ -334,10 +334,10 @@ export class AuthService {
       )
     }
 
-    await Prisma.userRecoveryCode.deleteMany({
+    await prisma.userRecoveryCode.deleteMany({
       where: { user: { id: userCode.user.id } },
     })
-    await Prisma.user.update({
+    await prisma.user.update({
       where: { id: userCode.user.id },
       data: { status: 'ACTIVED' },
     })
@@ -349,7 +349,7 @@ export class AuthService {
 
   async receiveCodeToValidateEmail(email: string, code: string) {
     try {
-      const userCode = await Prisma.confirmationCode.findUnique({
+      const userCode = await prisma.confirmationCode.findUnique({
         where: {
           code: code,
           email: email,
@@ -372,7 +372,7 @@ export class AuthService {
         )
       }
 
-      await Prisma.confirmationCode.delete({
+      await prisma.confirmationCode.delete({
         where: {
           code,
           email,
@@ -388,7 +388,7 @@ export class AuthService {
 
     const expiredAt = new Date(Date.now() + 60000 * 30)
 
-    await Prisma.confirmationCode.upsert({
+    await prisma.confirmationCode.upsert({
       where: { email },
       create: {
         email,
@@ -415,7 +415,7 @@ export class AuthService {
 
   async forgotPasswordChange(password: string, code: string) {
     try {
-      const userCode = await Prisma.userRecoveryCode.findUnique({
+      const userCode = await prisma.userRecoveryCode.findUnique({
         where: {
           code: +code,
         },
@@ -441,7 +441,7 @@ export class AuthService {
         )
       }
 
-      const user = await Prisma.user.update({
+      const user = await prisma.user.update({
         where: {
           id: userCode.userId,
         },
@@ -458,7 +458,7 @@ export class AuthService {
         )
       }
 
-      await Prisma.userRecoveryCode.delete({
+      await prisma.userRecoveryCode.delete({
         where: {
           userId: userCode.userId,
         },
