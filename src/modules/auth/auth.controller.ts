@@ -3,6 +3,7 @@ import {
   UploadedFile,
   Post,
   Body,
+  Request,
   UseInterceptors,
   Headers,
   BadRequestException,
@@ -21,6 +22,7 @@ import {
 
 import { FileInterceptor } from '@nestjs/platform-express'
 import { diskStorage } from 'multer'
+import { AuthMiddlewareRequest } from 'src/types/type'
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
@@ -69,6 +71,29 @@ export class AuthController {
     return this.authService.signIn(data, headers)
   }
 
+  @Post('sign-out')
+  @ApiResponse({
+    status: 200,
+    schema: {
+      example: 'Sessão finalizada',
+    },
+  })
+  signOut(@Request() req: AuthMiddlewareRequest) {
+    if (!req.user) {
+      throw new BadRequestException({
+        message: 'Falha na validação',
+        fields: [
+          {
+            field: 'token',
+            message: 'Token inválido',
+          },
+        ],
+      })
+    }
+
+    return this.authService.signOut(req.user.id)
+  }
+
   @Post('refresh-token')
   @ApiResponse({
     status: 200,
@@ -87,7 +112,21 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     schema: {
-      example: 'Email sent',
+      example: 'E-mail enviado',
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    schema: {
+      example: {
+        message: 'Falha na validação',
+        fields: [
+          {
+            field: 'email',
+            message: 'E-mail inválido',
+          },
+        ],
+      },
     },
   })
   forgotPassword(@Body() data: ForgotPasswordDto) {

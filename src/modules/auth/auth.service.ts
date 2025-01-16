@@ -8,7 +8,7 @@ import { I18nService, I18nContext } from 'nestjs-i18n'
 
 import { UserService } from '../user/user.service'
 import { createRecoveryCode, encrypt, jwt } from 'src/utils'
-import PrismaClient from 'prisma/instance'
+import Prisma from 'prisma'
 import {
   SignUpDto,
   SignInDto,
@@ -29,7 +29,7 @@ export class AuthService {
     { email, password }: SignInDto,
     headers: string,
   ): Promise<UserCreateResponseDTO> {
-    const user = await PrismaClient.user.findUnique({
+    const user = await Prisma.user.findUnique({
       where: {
         email,
       },
@@ -98,7 +98,7 @@ export class AuthService {
 
     const { exp } = jwt.verify(tokens.token)
 
-    await PrismaClient.session.upsert({
+    await Prisma.session.upsert({
       where: {
         userId: user.id,
       },
@@ -142,7 +142,7 @@ export class AuthService {
 
     const tokens = await jwt.sign(payload)
 
-    const updatedUser = await PrismaClient.user.findFirst({
+    const updatedUser = await Prisma.user.findFirst({
       where: {
         id: user.id,
       },
@@ -183,12 +183,16 @@ export class AuthService {
     }
   }
 
-  async logout(userId: number) {
-    await PrismaClient.session.deleteMany({
+  async signOut(userId: number) {
+    await Prisma.session.deleteMany({
       where: {
         userId,
       },
     })
+
+    return {
+      message: 'Sessão finalizada',
+    }
   }
 
   async refreshToken(refreshToken: string): Promise<signInReturnType> {
@@ -217,12 +221,8 @@ export class AuthService {
     return tokens
   }
 
-  async forgotPassword(data: {
-    email: string
-    locale: string
-    send_to?: 'email' | 'sms'
-  }) {
-    const { email, locale, send_to = 'email' } = data
+  async forgotPassword(data: { email: string; send_to?: 'email' | 'sms' }) {
+    const { email } = data
     const user = await this.usersService.findOneByEmail(email)
 
     if (!user) {
@@ -233,7 +233,7 @@ export class AuthService {
       )
     }
 
-    const hasCode = await PrismaClient.userRecoveryCode.findUnique({
+    const hasCode = await Prisma.userRecoveryCode.findUnique({
       where: {
         userId: user.id,
       },
@@ -249,7 +249,7 @@ export class AuthService {
         }),
       }
     } else if (hasCode?.expiredAt < new Date()) {
-      await PrismaClient.userRecoveryCode.delete({
+      await Prisma.userRecoveryCode.delete({
         where: {
           userId: user.id,
         },
@@ -260,49 +260,17 @@ export class AuthService {
 
     const expiredAt = new Date(Date.now() + 60000 * 30)
 
-    await PrismaClient.userRecoveryCode.create({
+    await Prisma.userRecoveryCode.create({
       data: {
         code: +code,
         expiredAt,
         userId: user.id,
       },
     })
-
-    // if (send_to === 'email') {
-    //   await this.sendgrid.sendEmail({
-    //     to: user.email,
-    //     subject: this.i18n.t('auth.forget_password.send_code', {
-    //       lang: locale,
-    //       args: { code },
-    //     }),
-    //     html: this.i18n.t('auth.forget_password.send_code', {
-    //       lang: locale,
-    //       args: { code },
-    //     }),
-    //   })
-
-    //   return {
-    //     message: this.i18n.t('auth.forget_password.sent_email'),
-    //   }
-    // } else if (send_to === 'sms') {
-    //   await this.twilio.sendSMS(
-    //     user.person.cellphone,
-    //     this.i18n.t('auth.forget_password.send_code', {
-    //       lang: locale,
-    //       args: { code },
-    //     }),
-    //   )
-
-    //   return {
-    //     message: this.i18n.t('auth.forget_password.sent_sms', {
-    //       lang: I18nContext.current().lang,
-    //     }),
-    //   }
-    // }
   }
 
   async forgotPasswordCode(code: string) {
-    const userCode = await PrismaClient.userRecoveryCode.findUnique({
+    const userCode = await Prisma.userRecoveryCode.findUnique({
       where: {
         code: +code,
       },
@@ -333,7 +301,7 @@ export class AuthService {
   }
 
   async validateUserWithCode(code: string) {
-    const userCode = await PrismaClient.userRecoveryCode.findUnique({
+    const userCode = await Prisma.userRecoveryCode.findUnique({
       where: {
         code: +code,
         user: { status: 'ACTIVED' },
@@ -366,10 +334,10 @@ export class AuthService {
       )
     }
 
-    await PrismaClient.userRecoveryCode.deleteMany({
+    await Prisma.userRecoveryCode.deleteMany({
       where: { user: { id: userCode.user.id } },
     })
-    await PrismaClient.user.update({
+    await Prisma.user.update({
       where: { id: userCode.user.id },
       data: { status: 'ACTIVED' },
     })
@@ -381,7 +349,7 @@ export class AuthService {
 
   async receiveCodeToValidateEmail(email: string, code: string) {
     try {
-      const userCode = await PrismaClient.confirmationCode.findUnique({
+      const userCode = await Prisma.confirmationCode.findUnique({
         where: {
           code: code,
           email: email,
@@ -404,7 +372,7 @@ export class AuthService {
         )
       }
 
-      await PrismaClient.confirmationCode.delete({
+      await Prisma.confirmationCode.delete({
         where: {
           code,
           email,
@@ -420,7 +388,7 @@ export class AuthService {
 
     const expiredAt = new Date(Date.now() + 60000 * 30)
 
-    await PrismaClient.confirmationCode.upsert({
+    await Prisma.confirmationCode.upsert({
       where: { email },
       create: {
         email,
@@ -447,7 +415,7 @@ export class AuthService {
 
   async forgotPasswordChange(password: string, code: string) {
     try {
-      const userCode = await PrismaClient.userRecoveryCode.findUnique({
+      const userCode = await Prisma.userRecoveryCode.findUnique({
         where: {
           code: +code,
         },
@@ -473,7 +441,7 @@ export class AuthService {
         )
       }
 
-      const user = await PrismaClient.user.update({
+      const user = await Prisma.user.update({
         where: {
           id: userCode.userId,
         },
@@ -490,7 +458,7 @@ export class AuthService {
         )
       }
 
-      await PrismaClient.userRecoveryCode.delete({
+      await Prisma.userRecoveryCode.delete({
         where: {
           userId: userCode.userId,
         },

@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
-import PrismaClient from 'prisma/instance'
+import Prisma from 'prisma'
 import { jwt } from 'src/utils'
 
 @Injectable()
@@ -27,7 +27,7 @@ export class RolesGuard implements CanActivate {
     }
 
     const decoded = jwt.verify(token)
-    const user = await PrismaClient.user.findUnique({
+    const user = await Prisma.user.findUnique({
       where: { id: decoded.id },
       select: {
         role: true,

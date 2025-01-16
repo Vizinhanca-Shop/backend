@@ -85,6 +85,8 @@ model userRecoveryCode {
   userId    Int       @unique
   user      User      @relation(fields: [userId], references: [id])
   code      Int       @unique
+  retry     Int       @default(0)
+  sendAt    DateTime?
   createdAt DateTime  @default(now())
   expiredAt DateTime?
 

@@ -75,11 +75,8 @@ export class RefreshTokenDto {
 
 export class ForgotPasswordDto {
   @IsNotEmpty()
+  @IsEmail()
   email: string
-  @IsNotEmpty()
-  locale: string
-  @IsOptional()
-  send_to?: 'email' | 'sms'
 }
 
 export class ForgotPasswordcodeDto {
