@@ -1,6 +1,6 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common'
 import { Reflector } from '@nestjs/core'
-import prisma from 'prisma'
+import prisma from 'prisma/instance'
 import { jwt } from 'src/utils'
 
 @Injectable()

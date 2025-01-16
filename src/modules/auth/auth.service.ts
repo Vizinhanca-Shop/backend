@@ -8,13 +8,8 @@ import { I18nService, I18nContext } from 'nestjs-i18n'
 
 import { UserService } from '../user/user.service'
 import { createRecoveryCode, encrypt, jwt } from 'src/utils'
-import prisma from 'prisma'
-import {
-  SignUpDto,
-  SignInDto,
-  UserCreateResponseDTO,
-  UserSignInResponseDTO,
-} from './dto/auth.dto'
+import prisma from 'prisma/instance'
+import { SignUpDto, SignInDto, UserCreateResponseDTO } from './dto/auth.dto'
 import { I18nTranslations } from 'src/i18n/generated/i18n.types'
 import { Role } from '@prisma/client'
 
@@ -29,6 +24,12 @@ export class AuthService {
     { email, password }: SignInDto,
     headers: string,
   ): Promise<UserCreateResponseDTO> {
+    console.log({
+      email,
+      password,
+      headers,
+    })
+
     const user = await prisma.user.findUnique({
       where: {
         email,

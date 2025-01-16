@@ -4,7 +4,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common'
 import { I18nService, I18nContext } from 'nestjs-i18n'
-import prisma from 'prisma'
+import prisma from 'prisma/instance'
 import { CreateUserDto } from './dto/user.dto'
 import { ChangePasswordDto, UpdateUserDto, SearchUserDto } from './dto/user.dto'
 import { encrypt } from 'src/utils/encrypt'
@@ -121,16 +121,18 @@ export class UserService {
       }
 
       if (file) {
-        const url = process.env.API_URL + '/' + file.path
-
-        console.log({ url })
+        const url = process.env.API_URL + '/images/avatar/' + file.filename
 
         return await prisma.user.update({
           where: {
             id: user.id,
           },
           data: {
-            avatarUrl: url,
+            avatar: {
+              create: {
+                url,
+              },
+            },
           },
         })
       }

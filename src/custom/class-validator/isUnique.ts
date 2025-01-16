@@ -5,7 +5,7 @@ import {
   ValidatorConstraint,
   ValidatorConstraintInterface,
 } from 'class-validator'
-import prisma from 'prisma'
+import prisma from 'prisma/instance'
 
 @ValidatorConstraint({ async: true })
 @Injectable()

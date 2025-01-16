@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common'
 import { Request } from 'express'
 import { jwt } from 'src/utils'
-import prisma from 'prisma'
+import prisma from 'prisma/instance'
 import { Role } from '@prisma/client'
 
 interface AuthMiddlewareRequest extends Request {

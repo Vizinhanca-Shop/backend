@@ -1,4 +1,4 @@
-import prisma from 'prisma'
+import prisma from 'prisma/instance'
 export * from './encrypt'
 export { default as jwt } from './jwt'
 export * from './regex'
