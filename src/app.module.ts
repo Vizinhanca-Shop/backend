@@ -56,7 +56,6 @@ import { StateModule } from './modules/state/state.module'
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
-      serveRoot: '../public',
     }),
     StateModule,
   ],

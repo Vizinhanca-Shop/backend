@@ -37,9 +37,10 @@ export const distinctArray = (array: any[], key: string) => {
 export const createRecoveryCode = async () => {
   const maxRetries = 10
   let retries = 0
+  let code = null
 
   while (retries < maxRetries) {
-    const code = Math.floor(100000 + Math.random() * 900000)
+    code = Math.floor(100000 + Math.random() * 900000)
     const exists = await PrismaClient.userRecoveryCode.findFirst({
       where: { code },
     })
@@ -54,4 +55,6 @@ export const createRecoveryCode = async () => {
 
     retries++
   }
+
+  return code
 }

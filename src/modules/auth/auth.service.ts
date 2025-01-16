@@ -7,9 +7,14 @@ import {
 import { I18nService, I18nContext } from 'nestjs-i18n'
 
 import { UserService } from '../user/user.service'
-import { createRecoveryCode, encrypt, jwt, validateCPF } from 'src/utils'
+import { createRecoveryCode, encrypt, jwt } from 'src/utils'
 import PrismaClient from 'prisma/instance'
-import { SignUpDto, SignInDto, UserCreateResponseDTO } from './dto/auth.dto'
+import {
+  SignUpDto,
+  SignInDto,
+  UserCreateResponseDTO,
+  UserSignInResponseDTO,
+} from './dto/auth.dto'
 import { I18nTranslations } from 'src/i18n/generated/i18n.types'
 import { Role } from '@prisma/client'
 
@@ -23,7 +28,7 @@ export class AuthService {
   async signIn(
     { email, password }: SignInDto,
     headers: string,
-  ): Promise<signInReturnType> {
+  ): Promise<UserCreateResponseDTO> {
     const user = await PrismaClient.user.findUnique({
       where: {
         email,
@@ -31,13 +36,30 @@ export class AuthService {
       select: {
         id: true,
         email: true,
-        status: true,
         password: true,
+        status: true,
         avatarUrl: true,
         role: true,
         person: {
           select: {
             name: true,
+            birthdate: true,
+            cpf: true,
+            canac: true,
+            city: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            state: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+              },
+            },
+            isPilot: true,
           },
         },
       },
@@ -161,6 +183,14 @@ export class AuthService {
     }
   }
 
+  async logout(userId: number) {
+    await PrismaClient.session.deleteMany({
+      where: {
+        userId,
+      },
+    })
+  }
+
   async refreshToken(refreshToken: string): Promise<signInReturnType> {
     const validToken = await jwt.verifyRefreshToken(refreshToken)
 
@@ -226,23 +256,7 @@ export class AuthService {
       })
     }
 
-    const createCode = async () => {
-      const code = Math.floor(100000 + Math.random() * 900000)
-
-      const hasSamecode = await PrismaClient.userRecoveryCode.findUnique({
-        where: {
-          code,
-        },
-      })
-
-      if (!hasSamecode) {
-        return code
-      }
-
-      return await createCode()
-    }
-
-    const code = await createCode()
+    const code = await createRecoveryCode()
 
     const expiredAt = new Date(Date.now() + 60000 * 30)
 
@@ -402,21 +416,7 @@ export class AuthService {
   }
 
   async sendEmailConfirmationCode(email: string) {
-    const createCode = async () => {
-      const code = Math.floor(100000 + Math.random() * 900000).toString()
-
-      const hasCode = await PrismaClient.confirmationCode.findUnique({
-        where: { email },
-      })
-
-      if (hasCode) {
-        return hasCode.code
-      }
-
-      return code
-    }
-
-    const code = await createCode()
+    const code = await createRecoveryCode()
 
     const expiredAt = new Date(Date.now() + 60000 * 30)
 

@@ -33,7 +33,6 @@ export class AuthMiddleware implements NestMiddleware {
     }
 
     if (!token) {
-      //TODO: Implement a better way to handle this to access public routes
       return req.next(new UnauthorizedException('Token not provided'))
     }
 

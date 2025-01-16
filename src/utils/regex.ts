@@ -1,7 +1,8 @@
-const cellphoneRegex = /^(\+[1-9]{1}[0-9]{3,14})?([0-9]{9,14})$/
-const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA  -Z0-9.-]+\.[a-zA-Z]{2,4}$/
-const passwordRegex = /^(?=.*[!@#$%^&*(),.?":{}|<>])(.{6,})$/
-const validateCPF = (cpf) => {
+export const cellphoneRegex = /^(\+[1-9]{1}[0-9]{3,14})?([0-9]{9,14})$/
+export const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA  -Z0-9.-]+\.[a-zA-Z]{2,4}$/
+export const passwordRegex =
+  /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/
+export const validateCPF = (cpf) => {
   cpf = cpf.replace(/[^\d]+/g, '') // Remove any non-numeric characters
 
   if (cpf.length !== 11 || /^(\d)\1+$/.test(cpf)) {
@@ -39,5 +40,3 @@ const validateCPF = (cpf) => {
 
   return true
 }
-
-export { cellphoneRegex, emailRegex, passwordRegex, validateCPF }

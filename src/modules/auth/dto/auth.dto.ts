@@ -102,3 +102,5 @@ export class UserCreateResponseDTO extends UserResponseDTO {
   @ApiProperty()
   refreshToken: string
 }
+
+export class UserSignInResponseDTO extends UserResponseDTO {}

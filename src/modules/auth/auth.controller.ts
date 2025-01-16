@@ -31,8 +31,8 @@ export class AuthController {
   @UseInterceptors(
     FileInterceptor('avatar', {
       storage: diskStorage({
-        destination: './public/avatar',
-        filename: (req, file, cb) => {
+        destination: './public/images/avatar',
+        filename: (_, file, cb) => {
           const randomName = Array(32)
             .fill(null)
             .map(() => Math.round(Math.random() * 16).toString(16))
@@ -62,24 +62,6 @@ export class AuthController {
   }
 
   @Post('sign-in')
-  @ApiResponse({
-    status: 200,
-    schema: {
-      example: {
-        email: 'user@centerlight.com.br',
-        avatarUrl: 'api.centerlight.com.br/avatar/j3kda4M2phÇoson4k5Y.png',
-        role: {
-          id: 2,
-          name: 'user',
-        },
-        person: {
-          name: 'User',
-        },
-        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
-        refreshToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9',
-      },
-    },
-  })
   signIn(
     @Body() data: SignInDto,
     @Headers('x-request-origin') headers: string,
