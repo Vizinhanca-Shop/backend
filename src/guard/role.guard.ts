@@ -34,6 +34,6 @@ export class RolesGuard implements CanActivate {
       },
     })
 
-    return requiredRoles.includes(user.role)
+    return requiredRoles.includes(String(user.role).toLowerCase())
   }
 }

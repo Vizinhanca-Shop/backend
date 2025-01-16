@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common'
 import { I18nService, I18nContext } from 'nestjs-i18n'
 import prisma from 'prisma/instance'
-import { CreateUserDto } from './dto/user.dto'
+import { CreateUserDto, UserResponseDTO } from './dto/user.dto'
 import { ChangePasswordDto, UpdateUserDto, SearchUserDto } from './dto/user.dto'
 import { encrypt } from 'src/utils/encrypt'
 import { jwt, removeInvalidValues, validateCPF } from 'src/utils'
@@ -210,84 +210,6 @@ export class UserService {
     }
   }
 
-  async findGuideNeedsApproval(query: SearchUserDto) {
-    const filters: any = { deletedAt: null }
-
-    if (query.email) {
-      filters.email = { contains: query.email, mode: 'insensitive' }
-    }
-
-    if (query.name) {
-      filters.person = {
-        ...filters.person,
-        name: { contains: query.name, mode: 'insensitive' },
-      }
-    }
-
-    const users = await prisma.user.findMany({
-      where: {
-        ...filters,
-        role: { id: 2 },
-        status: 'ANALYSIS',
-      },
-      select: {
-        id: true,
-        email: true,
-        status: true,
-        createdAt: true,
-        role: true,
-        avatar: {
-          select: {
-            id: true,
-            url: true,
-          },
-        },
-        person: {
-          select: {
-            name: true,
-            createdAt: true,
-          },
-        },
-      },
-      orderBy: {
-        id: 'asc',
-      },
-    })
-
-    return users
-  }
-
-  async changeUserStatus(id: number, status: UserStatus) {
-    if (!id) {
-      throw new BadRequestException(
-        this.i18n.t('auth.user.not_found', {
-          lang: I18nContext.current().lang,
-        }),
-      )
-    }
-
-    if (!UserStatus[status]) {
-      throw new BadRequestException(
-        this.i18n.t('auth.user.status_not_found', {
-          lang: I18nContext.current().lang,
-        }),
-      )
-    }
-
-    const user = await prisma.user.update({
-      where: {
-        id: +id,
-      },
-      data: {
-        status: status,
-      },
-    })
-
-    if (!user) {
-      throw new BadRequestException('Cannot set status on this user')
-    }
-  }
-
   async findOneByEmail(email: string) {
     const user = await prisma.user.findUnique({
       where: { email, deletedAt: null },
@@ -328,7 +250,7 @@ export class UserService {
     return user
   }
 
-  async findOneById(id: number) {
+  async findOneById(id: number): Promise<UserResponseDTO> {
     const user = await prisma.user.findUnique({
       where: { id },
       select: {
@@ -337,16 +259,27 @@ export class UserService {
         email: true,
         createdAt: true,
         status: true,
-        avatar: {
-          select: {
-            id: true,
-            url: true,
-          },
-        },
+        avatarUrl: true,
         person: {
           select: {
             name: true,
             cpf: true,
+            canac: true,
+            birthdate: true,
+            isPilot: true,
+            city: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            state: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+              },
+            },
           },
         },
       },

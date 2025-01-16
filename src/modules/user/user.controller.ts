@@ -109,31 +109,6 @@ export class UserController {
     return this.userService.findAll(query, req.user.id, +limit, +page)
   }
 
-  @Get('/guide-needs-approval')
-  @ApiQuery({
-    name: 'name',
-    required: false,
-    allowEmptyValue: true,
-  })
-  @ApiQuery({
-    name: 'email',
-    required: false,
-    allowEmptyValue: true,
-  })
-  @Roles('admin')
-  findGuideNeedsApproval(@Query() query: SearchUserDto) {
-    return this.userService.findGuideNeedsApproval(query)
-  }
-
-  @Post('/change-status')
-  @Roles('admin')
-  @ApiResponse({
-    status: 200,
-  })
-  changeUserStatus(@Body() data: { id: number; status: UserStatus }) {
-    return this.userService.changeUserStatus(data.id, data.status)
-  }
-
   @Get()
   @Roles('admin')
   @ApiResponse({
@@ -164,30 +139,7 @@ export class UserController {
   }
 
   @Get('/profile')
-  @Roles('admin', 'guide', 'user')
-  @ApiResponse({
-    status: 200,
-    schema: {
-      example: {
-        id: 1,
-        email: 'user@centerlight.com.br',
-        avatar: {
-          id: 1,
-          url: 'api.centerlight.com.br/avatar/j3kda4M2phÇoson4k5Y.png',
-        },
-        role: {
-          id: 2,
-          name: 'user',
-        },
-        person: {
-          name: 'User',
-          cellphone: '5548981726354',
-          cadastur: '123456',
-          cadasturAt: '2021-09-01T00:00:00.000Z',
-        },
-      },
-    },
-  })
+  @Roles('admin', 'manager', 'user')
   profile(@Request() req) {
     return this.userService.findOneById(+req.user.id)
   }

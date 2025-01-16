@@ -17,12 +17,12 @@ export class PersonDTO {
   name: string
 
   @IsString()
-  @ApiProperty({ example: '1234567890' })
-  canac: string
-
-  @IsString()
   @ApiProperty({ example: '12345678901' })
   cpf: string
+
+  @IsString()
+  @ApiProperty({ example: '1234567890' })
+  canac: string
 
   @IsDate()
   @ApiProperty({ example: '1990-01-01T00:00:00Z' })
