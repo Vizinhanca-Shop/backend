@@ -37,7 +37,7 @@ import { StateModule } from './modules/state/state.module'
     FormModule,
     ScheduleModule.forRoot(),
     I18nModule.forRoot({
-      fallbackLanguage: 'en',
+      fallbackLanguage: 'pt',
       fallbacks: {
         'pt-BR': 'pt',
         'en-*': 'en',
