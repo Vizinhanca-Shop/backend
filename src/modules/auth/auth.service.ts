@@ -24,12 +24,6 @@ export class AuthService {
     { email, password }: SignInDto,
     headers: string,
   ): Promise<UserCreateResponseDTO> {
-    console.log({
-      email,
-      password,
-      headers,
-    })
-
     const user = await prisma.user.findUnique({
       where: {
         email,
