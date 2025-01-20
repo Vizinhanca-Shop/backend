@@ -1,10 +1,10 @@
 export const defaultUsers = {
   admin: {
     email: 'admin@centerlight.com',
-    password: 'ç1@adm1n',
+    password: 'Center@adm1n',
     person: {
       name: 'Admin Seed',
-      birthdate: '1990-01-01',
+      birthdate: new Date('1990-01-01'),
       cpf: '12345678900',
       stateId: 1,
       cityId: 1,
@@ -12,10 +12,10 @@ export const defaultUsers = {
   },
   manager: {
     email: 'gestor@centerlight.com',
-    password: 'ç1@manager',
+    password: 'Center@manager',
     person: {
       name: 'Manager Seed',
-      birthdate: '1990-01-01',
+      birthdate: new Date('1990-01-01'),
       cpf: '12345678901',
       stateId: 1,
       cityId: 1,
@@ -23,10 +23,10 @@ export const defaultUsers = {
   },
   user: {
     email: 'user@centerlight.com',
-    password: 'ç1@user',
+    password: 'Center@user',
     person: {
       name: 'User Seed',
-      birthdate: '1990-01-01',
+      birthdate: new Date('1990-01-01'),
       cpf: '12345678902',
       stateId: 1,
       cityId: 1,
@@ -34,10 +34,10 @@ export const defaultUsers = {
   },
   pilot: {
     email: 'pilot@centerlight.com',
-    password: 'ç1@pilot',
+    password: 'Center@pilot',
     person: {
       name: 'Pilot Seed',
-      birthdate: '1990-01-01',
+      birthdate: new Date('1990-01-01'),
       cpf: '12345678903  ',
       isPilot: true,
       stateId: 1,

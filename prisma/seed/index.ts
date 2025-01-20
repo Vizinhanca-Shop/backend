@@ -20,40 +20,6 @@ const createCsvPipeline = async (handleData, fileName) => {
   return await pipeline(countryReadbleStream, parse(parseOption), handleData)
 }
 
-const formatCountryData = (row, countryData) => {
-  const headers = [
-    'id',
-    'country_name',
-    'iso2',
-    'iso3',
-    'top_level_domain',
-    'fips',
-    'iso_numeric',
-    'geonameid',
-    'e164',
-    'phone_code',
-    'continent',
-    'capital',
-    'time_zone_in_capital',
-    'currency',
-    'language_codes',
-    'languages',
-    'area_km2',
-    'internet_hosts',
-    'internet_users',
-    'phones_mobile',
-    'phones_landline',
-    'gdp',
-  ]
-
-  let countrieData = {}
-  headers.forEach((header, index) => {
-    countrieData = { ...countrieData, [header]: row[index] }
-  })
-  countryData.push(countrieData)
-  return countryData
-}
-
 const formatCityData = (row, citiesData) => {
   const headers = [
     'id',
