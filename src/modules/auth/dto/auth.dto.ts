@@ -10,7 +10,7 @@ import {
 import { IsPassword, IsUnique } from 'src/custom/class-validator'
 import { IsCpf } from 'src/custom/class-validator/isCpf'
 import { Transform } from 'class-transformer'
-import { UserResponseDTO } from 'src/modules/user/dto/user.dto'
+import { UserDTO } from 'src/modules/user/dto/user.dto'
 
 export class SignUpDto {
   @IsEmail()
@@ -93,7 +93,7 @@ export class NewPasswordDto {
   code: string
 }
 
-export class UserCreateResponseDTO extends UserResponseDTO {
+export class UserCreateResponseDTO extends UserDTO {
   @ApiProperty()
   token: string
 
@@ -101,4 +101,4 @@ export class UserCreateResponseDTO extends UserResponseDTO {
   refreshToken: string
 }
 
-export class UserSignInResponseDTO extends UserResponseDTO {}
+export class UserSignInResponseDTO extends UserDTO {}

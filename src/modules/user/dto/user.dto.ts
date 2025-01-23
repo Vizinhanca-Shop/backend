@@ -1,10 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger'
-import { IsBoolean, IsNotEmpty, IsOptional } from 'class-validator'
+import {
+  IsBoolean,
+  IsDate,
+  IsInt,
+  IsNotEmpty,
+  IsOptional,
+} from 'class-validator'
 import { IsPassword } from 'src/custom/class-validator'
 import { IsEmail, IsEnum, IsString, IsNumber } from 'class-validator'
 import { Role, UserStatus } from '@prisma/client'
 
 import { PersonDTO } from './person.dto'
+import { Transform } from 'class-transformer'
+import { IsCpf } from 'src/custom/class-validator/isCpf'
 
 export class CreateUserDto {
   @IsEmail()
@@ -42,33 +50,48 @@ export class CreateUserDto {
 
 export class UpdateUserDto {
   @IsEmail()
-  @IsNotEmpty()
-  email: string
+  @IsOptional()
+  email?: string
 
   @IsPassword()
-  password: string
-
-  @IsNotEmpty()
-  name: string
-
-  @IsNotEmpty()
-  birthdate: Date
+  @IsOptional()
+  @IsString()
+  password?: string
 
   @IsOptional()
+  @IsString()
+  name?: string
+
+  @IsOptional()
+  @IsString()
+  birthdate?: string
+
+  @IsString()
+  @IsOptional()
+  @IsCpf()
   cpf?: string
 
-  @ApiProperty({ type: 'string', format: 'binary', required: false })
   @IsOptional()
+  @ApiProperty({ type: 'string', format: 'binary', required: false })
   avatar?: string
 
   @IsOptional()
-  role?: Role
+  @IsInt()
+  @Transform(({ value }) => parseInt(value))
+  stateId?: number
 
-  @IsNotEmpty()
-  stateId: number
+  @IsOptional()
+  @IsInt()
+  @Transform(({ value }) => parseInt(value))
+  cityId?: number
 
-  @IsNotEmpty()
-  cityId: number
+  @IsString()
+  @IsOptional()
+  canac?: string
+
+  @IsOptional()
+  @IsBoolean()
+  isPilot?: boolean
 }
 
 export class AvatarDTO {
@@ -77,7 +100,7 @@ export class AvatarDTO {
   url: string
 }
 
-export class UserResponseDTO {
+export class UserDTO {
   @IsNumber()
   @ApiProperty({ example: 1 })
   id: number

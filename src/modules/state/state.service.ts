@@ -7,13 +7,20 @@ import { CityResponseDTO } from './dto/city.dto'
 @Injectable()
 export class StateService {
   async list(): Promise<StateResponseDTO[]> {
-    return await prisma.state.findMany()
+    return await prisma.state.findMany({
+      orderBy: {
+        name: 'asc',
+      },
+    })
   }
 
   async listStateCities(stateId: number): Promise<CityResponseDTO[]> {
     return await prisma.city.findMany({
       where: {
         stateId,
+      },
+      orderBy: {
+        name: 'asc',
       },
     })
   }

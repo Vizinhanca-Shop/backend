@@ -31,29 +31,29 @@ export class AuthCron {
       },
     })
 
-    for (const code of codes) {
-      const isUserApp = code.user.role === Role.USER
+    // for (const code of codes) {
+    //   const isUserApp = code.user.role === Role.USER
 
-      const template = isUserApp ? appTemplate : cmsTemplate
-      const data = isUserApp
-        ? code.code
-        : process.env.FRONT_HOST + `/auth/reset-password?code=${code.code}`
+    //   const template = isUserApp ? appTemplate : cmsTemplate
+    //   const data = isUserApp
+    //     ? code.code
+    //     : process.env.FRONT_HOST + `/auth/new-password?code=${code.code}`
 
-      const success = await sendEmail({
-        to: code.user.email,
-        subject: 'Centerlight - Recuperação de senha',
-        text: template(String(data)),
-      })
+    //   const success = await sendEmail({
+    //     to: code.user.email,
+    //     subject: 'Centerlight - Recuperação de senha',
+    //     text: template(String(data)),
+    //   })
 
-      await prisma.userRecoveryCode.update({
-        where: {
-          id: code.id,
-        },
-        data: {
-          retry: code.retry + 1,
-          ...(success && { sendAt: new Date() }),
-        },
-      })
-    }
+    //   await prisma.userRecoveryCode.update({
+    //     where: {
+    //       id: code.id,
+    //     },
+    //     data: {
+    //       retry: code.retry + 1,
+    //       ...(success && { sendAt: new Date() }),
+    //     },
+    //   })
+    // }
   }
 }

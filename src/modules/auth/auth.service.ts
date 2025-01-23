@@ -27,6 +27,7 @@ export class AuthService {
     const user = await prisma.user.findUnique({
       where: {
         email,
+        status: 'ACTIVED',
       },
       select: {
         id: true,
@@ -133,9 +134,15 @@ export class AuthService {
     })
 
     if (!city) {
-      throw new BadRequestException(
-        'Cidade não corresponde ao estado selecionado',
-      )
+      throw new BadRequestException({
+        message: 'Falha na validação',
+        fields: [
+          {
+            field: 'cityId',
+            message: 'Cidade não pertence ao estado selecionado',
+          },
+        ],
+      })
     }
 
     if (!user) {
@@ -278,6 +285,10 @@ export class AuthService {
         userId: user.id,
       },
     })
+
+    return {
+      message: 'Código enviado',
+    }
   }
 
   async forgotPasswordCode(code: string) {
@@ -319,6 +330,7 @@ export class AuthService {
       },
       select: {
         expiredAt: true,
+        used: true,
         user: {
           select: {
             id: true,
@@ -345,13 +357,13 @@ export class AuthService {
       )
     }
 
-    await prisma.userRecoveryCode.deleteMany({
-      where: { user: { id: userCode.user.id } },
-    })
-    await prisma.user.update({
-      where: { id: userCode.user.id },
-      data: { status: 'ACTIVED' },
-    })
+    if (userCode.used) {
+      throw new BadRequestException(
+        this.i18n.t('auth.forget_password.invalid_code', {
+          lang: I18nContext.current().lang,
+        }),
+      )
+    }
 
     return this.i18n.t('auth.forget_password.valid_code', {
       lang: I18nContext.current().lang,

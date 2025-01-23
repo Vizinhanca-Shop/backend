@@ -26,7 +26,7 @@ import { ChangePasswordDto, UpdateUserDto, SearchUserDto } from './dto/user.dto'
 import { RolesGuard } from 'src/guard/role.guard'
 import { Roles } from 'src/custom/decorators/roles.decorator'
 import { AuthMiddlewareRequest } from 'src/types/type'
-import { UserStatus } from '@prisma/client'
+import { diskStorage } from 'multer'
 
 @ApiTags('user')
 @Controller('user')
@@ -145,15 +145,29 @@ export class UserController {
   }
 
   @Patch('/profile')
-  @Roles('admin', 'guide', 'user')
+  @Roles('admin', 'manager', 'user')
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FileInterceptor('avatar'))
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      storage: diskStorage({
+        destination: './public/images/avatar',
+        filename: (_, file, cb) => {
+          const fileExtName = file.originalname.split('.').pop()
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('')
+          cb(null, `${randomName}.${fileExtName}`)
+        },
+      }),
+    }),
+  )
   updateProfile(
     @Request() req,
     @Body() updateUserDto: UpdateUserDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
-    return this.userService.update(+req.user.id, updateUserDto, file)
+    return this.userService.update(req.user.id, updateUserDto, file)
   }
 
   @Get('/roles')
@@ -178,34 +192,23 @@ export class UserController {
   }
 
   @Patch()
-  @Roles('admin', 'guide', 'user')
+  @Roles('admin', 'manager', 'user')
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FileInterceptor('avatar'))
-  @ApiResponse({
-    status: 201,
-    schema: {
-      example: {
-        id: 1,
-        name: 'User',
-        email: 'user@centerlight.com.br',
-        avatar: {
-          id: 1,
-          url: 'api.centerlight.com.br/avatar/j3kda4M2phÇoson4k5Y.png',
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      storage: diskStorage({
+        destination: './public/images/avatar',
+        filename: (_, file, cb) => {
+          const fileExtName = file.originalname.split('.').pop()
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('')
+          cb(null, `${randomName}.${fileExtName}`)
         },
-        role: {
-          id: 2,
-          name: 'user',
-        },
-        person: {
-          name: 'User',
-          cellphone: '5548981726354',
-          cadastur: '123456',
-          cadasturAt: '2021-09-01T00:00:00.000Z',
-          wantToBeCalled: 'User Name',
-        },
-      },
-    },
-  })
+      }),
+    }),
+  )
   update(
     @Query('id') id: number,
     @Body() updateUserDto: UpdateUserDto,
@@ -215,19 +218,19 @@ export class UserController {
   }
 
   @Delete()
-  @Roles('admin')
+  @Roles('admin', 'manager', 'user')
   @ApiResponse({
     status: 200,
     schema: {
       example: 'User deleted successfully',
     },
   })
-  remove(@Query('id') id: number) {
-    return this.userService.remove(+id)
+  remove(@Request() req, @Query('id') id?: number) {
+    return this.userService.remove({ id, user: req.user })
   }
 
   @Post('change-password')
-  @Roles('admin', 'guide', 'user')
+  @Roles('admin', 'manager', 'user')
   @ApiResponse({
     status: 200,
     schema: {

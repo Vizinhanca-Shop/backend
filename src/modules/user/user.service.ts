@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common'
 import { I18nService, I18nContext } from 'nestjs-i18n'
 import prisma from 'prisma/instance'
-import { CreateUserDto, UserResponseDTO } from './dto/user.dto'
+import { CreateUserDto, UserDTO } from './dto/user.dto'
 import { ChangePasswordDto, UpdateUserDto, SearchUserDto } from './dto/user.dto'
 import { encrypt } from 'src/utils/encrypt'
 import { jwt, removeInvalidValues, validateCPF } from 'src/utils'
@@ -250,7 +250,7 @@ export class UserService {
     return user
   }
 
-  async findOneById(id: number): Promise<UserResponseDTO> {
+  async findOneById(id: number): Promise<UserDTO> {
     const user = await prisma.user.findUnique({
       where: { id },
       select: {
@@ -302,53 +302,18 @@ export class UserService {
   }
 
   async update(
-    id: number,
+    userId: number,
     updateUserDto: UpdateUserDto,
     file: Express.Multer.File,
   ) {
-    const userExists = await this.findOneById(+id)
-
-    if (!userExists) {
-      throw new BadRequestException(
-        this.i18n.t('auth.user.not_found', {
-          lang: I18nContext.current().lang,
-        }),
-      )
-    }
-
-    const { email, role, ...personData } = updateUserDto
-    const filtredPersonData = removeInvalidValues(personData)
-    const abc = role
-    if (role) {
-      const adminRole = Role.ADMIN
-
-      if (role === adminRole && userExists.role !== adminRole) {
-        throw new UnauthorizedException(
-          this.i18n.t('auth.user.permission_denied', {
-            lang: I18nContext.current().lang,
-          }),
-        )
-      }
-
-      await prisma.user.update({
-        where: {
-          id: +id,
-        },
-        data: {
-          role,
-        },
-      })
-    }
+    const { email, password, ...personData } = updateUserDto
 
     if (personData?.cpf) {
-      const cpfIsValid = validateCPF(updateUserDto.cpf)
-      if (!cpfIsValid) throw new BadRequestException('Cpf invalido')
-
       const person = await prisma.person.findUnique({
         where: {
           user: {
             id: {
-              not: +id,
+              not: userId,
             },
           },
           cpf: updateUserDto.cpf?.replace(/\D/g, ''),
@@ -365,16 +330,16 @@ export class UserService {
     }
 
     if (email) {
-      const user = await prisma.user.findUnique({
+      const existUser = await prisma.user.findUnique({
         where: {
           email,
           NOT: {
-            id: +id,
+            id: userId,
           },
         },
       })
 
-      if (user) {
+      if (existUser) {
         throw new BadRequestException(
           this.i18n.t('auth.user.email_already_exists', {
             lang: I18nContext.current().lang,
@@ -383,76 +348,71 @@ export class UserService {
       }
     }
 
-    let uploadResponse = null
+    if (personData?.cityId) {
+      const city = await prisma.city.findUnique({
+        where: {
+          id: personData.cityId,
+          stateId: personData.stateId,
+        },
+        select: {
+          id: true,
+        },
+      })
 
-    // if (file) {
-    //   const uploadedImage = await this.s3Service.uploadFile(file, 'user-avatar')
-    //   uploadResponse = uploadedImage
-    // }
-
-    delete filtredPersonData.avatar
-
-    const updatePerson = await prisma.person.update({
-      where: {
-        userId: +id,
-      },
-      data: {
-        ...filtredPersonData,
-        ...(filtredPersonData?.birthdate && {
-          birthdate: new Date(filtredPersonData.birthdate),
-        }),
-        ...(filtredPersonData?.cpf && {
-          cpf: filtredPersonData?.cpf?.replace(/\D/g, ''),
-        }),
-      },
-    })
-
-    if (!updatePerson) {
-      throw new BadRequestException(
-        this.i18n.t('auth.user.cellphone_already_exists', {
-          lang: I18nContext.current().lang,
-        }),
-      )
-    }
-
-    const userData = uploadResponse
-      ? {
-          email,
-          avatar: {
-            upsert: {
-              create: {
-                url: uploadResponse.Location,
-                key: uploadResponse.Key,
-              },
-              update: {
-                url: uploadResponse.Location,
-                key: uploadResponse.Key,
-              },
+      if (!city) {
+        throw new BadRequestException({
+          message: 'Falha na validação',
+          fields: [
+            {
+              field: 'cityId',
+              message: 'Cidade não pertence ao estado selecionado',
             },
-          },
-        }
-      : { email }
-
-    const filtredUserData = removeInvalidValues(userData)
+          ],
+        })
+      }
+    }
 
     const updatedUser = await prisma.user.update({
       where: {
-        id: +id,
+        id: userId,
       },
       data: {
-        ...filtredUserData,
+        ...(email && { email }),
+        ...(password && { password: await encrypt.hash(password) }),
+        ...(file && {
+          avatar: {
+            upsert: {
+              create: {
+                url: process.env.API_URL + '/images/avatar/' + file.filename,
+                key: file.filename,
+              },
+              update: {
+                url: process.env.API_URL + '/images/avatar/' + file.filename,
+                key: file.filename,
+              },
+            },
+          },
+        }),
+        person: {
+          update: {
+            ...(updateUserDto?.canac && { canac: updateUserDto.canac }),
+            ...(updateUserDto?.isPilot && { isPilot: updateUserDto.isPilot }),
+            ...(updateUserDto?.name && { name: updateUserDto.name }),
+            ...(updateUserDto?.cpf && { cpf: updateUserDto.cpf }),
+            ...(updateUserDto?.cityId && { cityId: personData.cityId }),
+            ...(updateUserDto?.stateId && { stateId: personData.stateId }),
+            ...(updateUserDto?.birthdate && {
+              birthdate: updateUserDto.birthdate,
+            }),
+          },
+        },
       },
       select: {
         id: true,
         email: true,
         role: true,
         status: true,
-        avatar: {
-          select: {
-            id: true,
-            url: true,
-          },
-        },
+        avatarUrl: true,
         person: {
           select: {
             name: true,
@@ -471,19 +431,27 @@ export class UserService {
     return updatedUser
   }
 
-  async remove(id: number) {
-    const user = await prisma.user.update({
+  async remove({ id, user }: { id?: number; user: UserDTO }) {
+    let userId = id
+
+    // If the user is not an admin, it can only delete itself
+    if (user.role !== Role.ADMIN) {
+      userId = user.id
+    }
+
+    const deletedUser = await prisma.user.update({
       where: {
-        id: +id,
+        id: +userId,
       },
       data: {
         deletedAt: new Date(),
-        email: `${id}@deleted-account.com`,
+        status: UserStatus.INACTIVE,
+        email: `${userId}@deleted-account.com`,
         person: {
           update: {
-            name: `${id}@deleted-name`,
-            cpf: `${id}@deleted-cpf`,
-            canac: `${id}@deleted-canac`,
+            name: `${userId}@deleted-name`,
+            cpf: `${userId}@deleted-cpf`,
+            canac: `${userId}@deleted-canac`,
           },
         },
       },
@@ -498,20 +466,7 @@ export class UserService {
       },
     })
 
-    if (user?.person?.cpf) {
-      const maskDocument = `${id}@deleted-${user?.person?.cpf?.substring(0, 2)}.xxx.xxx-${user?.person?.cpf?.substring(8, 10)}`
-
-      await prisma.person.update({
-        where: {
-          id: user.person.id,
-        },
-        data: {
-          cpf: maskDocument,
-        },
-      })
-    }
-
-    if (!user) {
+    if (!deletedUser) {
       throw new BadRequestException(
         this.i18n.t('auth.user.delete.error', {
           lang: I18nContext.current().lang,
