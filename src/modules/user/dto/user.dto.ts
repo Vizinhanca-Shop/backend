@@ -145,18 +145,29 @@ export class ChangePasswordDto {
 export class SearchUserDto {
   @IsOptional()
   @IsString()
-  name?: string
+  search?: string
 
   @IsOptional()
   @IsString()
-  email?: string
+  name?: 'asc' | 'desc'
 
   @IsOptional()
-  roleId?: number | string
+  @IsString()
+  email?: 'asc' | 'desc'
 
   @IsOptional()
+  @IsString()
+  role?: 'asc' | 'desc'
+
+  @IsOptional()
+  @IsString()
   page?: number
 
   @IsOptional()
+  @IsString()
   limit?: number
+
+  @IsOptional()
+  @IsString()
+  status?: 'asc' | 'desc'
 }

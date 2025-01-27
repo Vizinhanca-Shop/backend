@@ -143,23 +143,58 @@ export class UserService {
     }
   }
 
-  async findAll(query: SearchUserDto, userId: number, limit, page) {
-    const filters: any = { deletedAt: null, id: { not: userId } }
+  async findAll(
+    query: SearchUserDto,
+    userId: number,
+    limit: number,
+    page: number,
+  ) {
+    let filters: any = { deletedAt: null, id: { not: userId } }
+
+    if (query.search) {
+      filters = {
+        ...filters,
+        person: {
+          name: {
+            contains: query.search,
+            mode: 'insensitive',
+          },
+        },
+      }
+    }
+
+    const orderBy = [] as any
+
+    if (query.status) {
+      orderBy.push({
+        status: query.status,
+      })
+    }
+
+    if (query.name) {
+      orderBy.push({
+        person: {
+          name: query.name,
+        },
+      })
+    }
 
     if (query.email) {
-      filters.email = { contains: query.email, mode: 'insensitive' }
+      orderBy.push({
+        email: query.email,
+      })
     }
-    if (query.roleId) {
-      filters.roleId = {
-        equals: +query.roleId,
-      }
+
+    if (query.role) {
+      orderBy.push({
+        role: query.role,
+      })
     }
-    if (query.name) {
-      filters.person = {
-        ...filters.person,
-        name: { contains: query.name, mode: 'insensitive' },
-      }
-    }
+
+    // Default order by createdAt, get the most recent first
+    orderBy.push({
+      createdAt: 'desc',
+    })
 
     const count = await prisma.user.count({
       where: filters,
@@ -179,9 +214,7 @@ export class UserService {
           },
         },
       },
-      orderBy: {
-        createdAt: 'desc',
-      },
+      orderBy,
       take: limit,
       skip: (page - 1) * limit,
     })
@@ -301,8 +334,6 @@ export class UserService {
     file: Express.Multer.File,
   ) {
     const { email, password, status, ...personData } = updateUserDto
-
-    console.log('personData', personData)
 
     if (personData?.cpf) {
       const person = await prisma.person.findUnique({
