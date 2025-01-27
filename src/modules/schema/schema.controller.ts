@@ -12,8 +12,6 @@ import { Roles } from 'src/custom/decorators/roles.decorator'
 
 @ApiTags('schema')
 @Controller('schema')
-@Roles('admin', 'manager', 'user')
-@UseGuards(RolesGuard)
 @ApiBearerAuth('access-token')
 export class ExportController {
   @Get('collection')

@@ -170,15 +170,9 @@ export class UserService {
       select: {
         id: true,
         email: true,
-        createdAt: true,
         status: true,
         role: true,
-        avatar: {
-          select: {
-            id: true,
-            url: true,
-          },
-        },
+        avatarUrl: true,
         person: {
           select: {
             name: true,
@@ -306,7 +300,9 @@ export class UserService {
     updateUserDto: UpdateUserDto,
     file: Express.Multer.File,
   ) {
-    const { email, password, ...personData } = updateUserDto
+    const { email, password, status, ...personData } = updateUserDto
+
+    console.log('personData', personData)
 
     if (personData?.cpf) {
       const person = await prisma.person.findUnique({
@@ -377,6 +373,7 @@ export class UserService {
         id: userId,
       },
       data: {
+        ...(status && { status }),
         ...(email && { email }),
         ...(password && { password: await encrypt.hash(password) }),
         ...(file && {

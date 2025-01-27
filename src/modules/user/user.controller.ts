@@ -214,7 +214,7 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
-    return this.userService.update(id, updateUserDto, file)
+    return this.userService.update(+id, updateUserDto, file)
   }
 
   @Delete()

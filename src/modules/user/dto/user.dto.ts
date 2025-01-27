@@ -59,6 +59,10 @@ export class UpdateUserDto {
   password?: string
 
   @IsOptional()
+  @IsEnum(UserStatus)
+  status?: UserStatus
+
+  @IsOptional()
   @IsString()
   name?: string
 
@@ -76,12 +80,10 @@ export class UpdateUserDto {
   avatar?: string
 
   @IsOptional()
-  @IsInt()
   @Transform(({ value }) => parseInt(value))
   stateId?: number
 
   @IsOptional()
-  @IsInt()
   @Transform(({ value }) => parseInt(value))
   cityId?: number
 
