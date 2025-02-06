@@ -27,7 +27,7 @@ export class AuthService {
     const user = await prisma.user.findUnique({
       where: {
         email,
-        status: 'ACTIVED',
+        status: 'ACTIVE',
       },
       select: {
         id: true,
@@ -326,7 +326,7 @@ export class AuthService {
     const userCode = await prisma.userRecoveryCode.findUnique({
       where: {
         code: +code,
-        user: { status: 'ACTIVED' },
+        user: { status: 'ACTIVE' },
       },
       select: {
         expiredAt: true,

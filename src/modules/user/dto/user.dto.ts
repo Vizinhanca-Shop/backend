@@ -28,8 +28,8 @@ export class CreateUserDto {
   @IsNotEmpty()
   birthdate: Date
 
-  @IsOptional()
-  cpf?: string
+  @IsNotEmpty()
+  cpf: string
 
   @ApiProperty({ type: 'string', format: 'binary', required: false })
   @IsOptional()
@@ -45,7 +45,8 @@ export class CreateUserDto {
   cityId: number
 
   @IsBoolean()
-  isPilot: boolean
+  @IsOptional()
+  isPilot?: boolean
 }
 
 export class UpdateUserDto {
@@ -116,7 +117,7 @@ export class UserDTO {
   role: Role
 
   @IsEnum(UserStatus)
-  @ApiProperty({ enum: UserStatus, example: 'ACTIVED' })
+  @ApiProperty({ enum: UserStatus, example: 'ACTIVE' })
   status: UserStatus
 
   @IsString()

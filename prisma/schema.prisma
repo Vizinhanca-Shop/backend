@@ -9,7 +9,7 @@ datasource db {
 }
 
 enum UserStatus {
-  ACTIVED
+  ACTIVE
   INACTIVE
 }
 
@@ -54,7 +54,7 @@ model User {
 
   userRecoveryCode userRecoveryCode?
   session          Session?
-  status           UserStatus        @default(ACTIVED)
+  status           UserStatus        @default(ACTIVE)
   person           Person?
 
   @@map("users")

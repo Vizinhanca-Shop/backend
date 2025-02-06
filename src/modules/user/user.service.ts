@@ -87,7 +87,7 @@ export class UserService {
           email: email,
           password: await encrypt.hash(password),
           role: createUserDto.role,
-          status: UserStatus.ACTIVED,
+          status: UserStatus.ACTIVE,
           person: {
             create: {
               name: personData.name,
