@@ -1,20 +1,17 @@
 name: Build, Tag & Deploy Node.js Project
 
-# Trigger this workflow on pushes to "staging" or "main" branches.
+# Trigger this workflow on pushes to tags matching the pattern 'v*.*.*'.
 on:
   push:
-    branches:
-      - staging
-      - main
+    tags:
+      - 'v*.*.*'  # Adjust the pattern to match your versioning scheme
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     env:
-      # Set your ECR repository name here.
-      ECR_REPOSITORY: backend
-      # AWS region—update if needed.
-      AWS_REGION: sa-east-1
+      ECR_REPOSITORY: backend  # Set your ECR repository name here.
+      AWS_REGION: sa-east-1    # AWS region—update if needed.
 
     steps:
       # Step 1: Checkout the repository.
@@ -31,27 +28,21 @@ jobs:
       - name: Install dependencies
         run: yarn install
 
-      # Step 4: Run tests.
+      # Step 4: Run tests (optional).
+      # Uncomment the following step if you have tests to run.
       # - name: Run tests
-        # run: npm test
+      #   run: yarn test
 
       # Step 5: Build the project.
       - name: Build project
         run: yarn run build
 
-      # Step 6: On the main branch only, bump version (patch), create a Git tag, and push it.
-      - name: Bump version and push tag
-        if: github.ref == 'refs/heads/main'
-        run: |
-          npm version patch -m "chore(release): %s"
-          git push origin HEAD --follow-tags
-
-      # Step 7: Capture the current version from package.json for use as the Docker tag.
-      - name: Get project version
+      # Step 6: Extract version from the Git tag.
+      - name: Get version from tag
         id: get_version
-        run: echo "VERSION=$(node -p \"require('./package.json').version\")" >> $GITHUB_OUTPUT
+        run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-      # Step 8: Configure AWS credentials using repository secrets.
+      # Step 7: Configure AWS credentials using repository secrets.
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -59,20 +50,19 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # Step 9: Login to Amazon ECR.
+      # Step 8: Login to Amazon ECR.
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      # Step 10: Build, tag, and push the Docker image to ECR.
-      - name: Build, tag and push Docker image
+      # Step 9: Build, tag, and push the Docker image to ECR.
+      - name: Build, tag, and push Docker image
         run: |
-          IMAGE_VERSION=${{ steps.get_version.outputs.VERSION }}
           REPO_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}
-          echo "Building image with tag: $IMAGE_VERSION"
-          docker build -t $REPO_URI:$IMAGE_VERSION .
+          echo "Building image with tag: $VERSION"
+          docker build -t $REPO_URI:$VERSION .
           # Also tag the image as "latest"
-          docker tag $REPO_URI:$IMAGE_VERSION $REPO_URI:latest
+          docker tag $REPO_URI:$VERSION $REPO_URI:latest
           echo "Pushing image tags..."
-          docker push $REPO_URI:$IMAGE_VERSION
+          docker push $REPO_URI:$VERSION
           docker push $REPO_URI:latest
