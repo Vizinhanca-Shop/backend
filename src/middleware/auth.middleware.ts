@@ -16,7 +16,7 @@ interface AuthMiddlewareRequest extends Request {
   }
 }
 
-const publicRoutes = ['auth', 'public', 'state', 'schema']
+const publicRoutes = ['auth', 'public', 'state', 'schema', 'jwk']
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
   async use(req: AuthMiddlewareRequest, next: (value?: unknown) => void) {
