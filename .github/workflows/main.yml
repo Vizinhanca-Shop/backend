@@ -12,9 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     env:
       # Set your ECR repository name here.
-      ECR_REPOSITORY: my-node-app
+      ECR_REPOSITORY: backend
       # AWS region—update if needed.
-      AWS_REGION: us-east-1
+      AWS_REGION: sa-east-1
 
     steps:
       # Step 1: Checkout the repository.
