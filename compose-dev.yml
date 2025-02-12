@@ -1,11 +1,8 @@
+version: '3.8'
+
 services:
-  backend:
-    networks:
-      - default
-    restart: always
-    extra_hosts:
-      - 'host.docker.internal:host-gateway'
-    container_name: 'dev-api.centerlight.com'
+  api:
+    container_name: ${API_HOST}
     build:
       dockerfile: ./registry/development/Dockerfile
       context: ./
@@ -28,6 +25,8 @@ services:
       JWT_SECRET: '${JWT_SECRET}'
       JWT_REFRESH_SECRET: '${JWT_REFRESH_SECRET}'
       HASH_SALT: '${HASH_SALT}'
+    networks:
+      - app_network  # Adicionando a rede compartilhada
 
   postgres:
     container_name: '${POSTGRES_DB}'
@@ -41,12 +40,10 @@ services:
       - '${POSTGRES_PORT}:${POSTGRES_PORT}'
     volumes:
       - './.data:/var/lib/postgresql/data:rw'
-    labels:
-      traefik.enable: true
-      traefik.http.routers.pg.rule: Host(`${POSTGRES_HOST}`)
-      traefik.http.routers.pg.entrypoints: http
-      traefik.http.routers.pg.port: 5432
+    networks:
+      - app_network  # Adicionando a rede compartilhada
 
 networks:
-  default:
+  app_network:
+    name: app_network
     driver: bridge
