@@ -55,7 +55,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      # Step 9: Build, tag using git tag, and push the Docker image to ECR.
+      # Step 9: Build, tag, and push the Docker image to ECR.
       - name: Build, tag, and push Docker image
         run: |
           REPO_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}
