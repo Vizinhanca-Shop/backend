@@ -60,7 +60,7 @@ jobs:
         run: |
           REPO_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}
           echo "Building image with tag: $VERSION"
-          docker build -t $REPO_URI:$VERSION ./registry/production/
+          docker build -t $REPO_URI:$VERSION -f ./registry/production/ .
           # Also tag the image as "latest"
           docker tag $REPO_URI:$VERSION $REPO_URI:latest
           echo "Pushing image tags..."
