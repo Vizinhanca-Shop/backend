@@ -19,7 +19,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "seed": "ts-node prisma/seed/index.ts",
     "seed:cities": "ts-node prisma/seeds/add_city_unaccent_name.ts",
-    "generate:i18n-types": "ts-node ./src/i18n/generate-i18n-types.ts"
+    "generate:i18n-types": "ts-node ./src/i18n/generate-i18n-types.ts",
+    "fake:users": "ts-node prisma/seed/fake.ts"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.9",
