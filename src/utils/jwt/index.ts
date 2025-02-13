@@ -4,9 +4,9 @@ import { jwtConstants } from 'src/const/jwt'
 
 const generateRefreshToken = (payload: singPayload): string => {
   try {
-    const secret = process.env.JWT_REFRESH_SECRET
-
-    const token = jwt.sign(payload, secret, {
+    const secret = process.env.JWT_REFRESH_SECRET as jwt.Secret
+    // @ts-ignore
+    const token = jwt.sign(payload, secret as string, {
       expiresIn: jwtConstants.jwtRefreshExpiration,
       header: { kid: "sim2", alg:"HS256" }
     })
@@ -22,9 +22,10 @@ const generateRefreshToken = (payload: singPayload): string => {
 }
 
 const generateToken = (payload: singPayload): string => {
-  const secret = process.env.JWT_REFRESH_SECRET
+  const secret = process.env.JWT_REFRESH_SECRET as string
 
   try {
+    // @ts-ignore
     const token = jwt.sign(payload, secret, {
       expiresIn: jwtConstants.jwtExpiration,
       header: { kid: "sim2", alg:"HS256" }
