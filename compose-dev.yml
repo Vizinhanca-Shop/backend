@@ -26,7 +26,7 @@ services:
       JWT_REFRESH_SECRET: '${JWT_REFRESH_SECRET}'
       HASH_SALT: '${HASH_SALT}'
     networks:
-      - app_network # Adicionando a rede compartilhada
+      - app_network
 
   postgres:
     container_name: '${POSTGRES_DB}'
@@ -41,7 +41,7 @@ services:
     volumes:
       - './.data:/var/lib/postgresql/data:rw'
     networks:
-      - app_network # Adicionando a rede compartilhada
+      - app_network
 
 networks:
   app_network:

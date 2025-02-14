@@ -28,7 +28,9 @@ services:
       JWT_SECRET: '${JWT_SECRET}'
       JWT_REFRESH_SECRET: '${JWT_REFRESH_SECRET}'
       HASH_SALT: '${HASH_SALT}'
+    networks:
+      - app_network 
 
 networks:
-  shared:
-    external: true
+  app_network:
+    name: app_network
