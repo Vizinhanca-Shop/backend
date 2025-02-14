@@ -1,7 +1,5 @@
 services:
   backend:
-    networks:
-      - shared
     restart: always
     container_name: 'docker_${API_HOST}'
     build:
@@ -29,7 +27,7 @@ services:
       JWT_REFRESH_SECRET: '${JWT_REFRESH_SECRET}'
       HASH_SALT: '${HASH_SALT}'
     networks:
-      - app_network 
+      - app_network
 
 networks:
   app_network:
