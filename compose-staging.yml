@@ -29,6 +29,22 @@ services:
       JWT_REFRESH_SECRET: '${JWT_REFRESH_SECRET}'
       HASH_SALT: '${HASH_SALT}'
 
+  postgres:
+    container_name: '${POSTGRES_DB}'
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - '5432:5432'
+    volumes:
+      - './.data:/var/lib/postgresql/data:rw'
+    networks:
+      - app_network
+
 networks:
-  shared:
-    external: true
+  app_network:
+    name: app_network
+    driver: bridge
