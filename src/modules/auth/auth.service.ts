@@ -9,7 +9,12 @@ import { I18nService, I18nContext } from 'nestjs-i18n'
 import { UserService } from '../user/user.service'
 import { createRecoveryCode, encrypt, jwt } from 'src/utils'
 import prisma from 'prisma/instance'
-import { SignUpDto, SignInDto, UserCreateResponseDTO } from './dto/auth.dto'
+import {
+  SignUpDto,
+  SignInDto,
+  UserCreateResponseDTO,
+  SignInCpfDto,
+} from './dto/auth.dto'
 import { I18nTranslations } from 'src/i18n/generated/i18n.types'
 import { Role } from '@prisma/client'
 
@@ -20,10 +25,7 @@ export class AuthService {
     private readonly i18n: I18nService<I18nTranslations>,
   ) {}
 
-  async signIn(
-    { email, password }: SignInDto,
-    headers: string,
-  ): Promise<UserCreateResponseDTO> {
+  async signIn({ email, password }: SignInDto): Promise<UserCreateResponseDTO> {
     const user = await prisma.user.findUnique({
       where: {
         email,
@@ -79,12 +81,6 @@ export class AuthService {
       )
     }
 
-    if (headers && headers === 'centerlight-app') {
-      if (user.role !== Role.USER) {
-        throw new UnauthorizedException('Centerlight app is only for users')
-      }
-    }
-
     const payload = {
       id: user.id,
       email: user.email,
@@ -114,6 +110,103 @@ export class AuthService {
     return {
       ...user,
       ...tokens,
+    }
+  }
+
+  async signInCpf({
+    cpf,
+    password,
+  }: SignInCpfDto): Promise<UserCreateResponseDTO> {
+    const user = await prisma.user.findFirst({
+      where: {
+        person: {
+          cpf,
+        },
+        status: 'ACTIVE',
+      },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        status: true,
+        avatarUrl: true,
+        role: true,
+        person: {
+          select: {
+            name: true,
+            birthdate: true,
+            cpf: true,
+            canac: true,
+            city: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            state: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+              },
+            },
+            isPilot: true,
+          },
+        },
+      },
+    })
+
+    if (!user) {
+      throw new NotFoundException(
+        this.i18n.t('auth.user.not_found', {
+          lang: I18nContext.current().lang,
+        }),
+      )
+    }
+
+    const isMatch = await encrypt.compare(password, user?.password)
+
+    if (!isMatch) {
+      throw new UnauthorizedException(
+        this.i18n.t('auth.user.not_found', {
+          lang: I18nContext.current().lang,
+        }),
+      )
+    }
+
+    const payload = {
+      id: user.id,
+      email: user.email,
+    }
+
+    const tokens = await jwt.sign(payload)
+
+    const { exp } = jwt.verify(tokens.token)
+
+    await prisma.session.upsert({
+      where: {
+        userId: user.id,
+      },
+      create: {
+        userId: user.id,
+        token: tokens.token,
+        expiredAt: new Date(exp * 1000),
+      },
+      update: {
+        token: tokens.token,
+        expiredAt: new Date(exp * 1000),
+      },
+    })
+
+    return {
+      id: user.id,
+      email: user.email,
+      status: user.status,
+      avatarUrl: user.avatarUrl,
+      role: user.role,
+      person: user.person,
+      token: tokens.token,
+      refreshToken: tokens.refreshToken,
     }
   }
 

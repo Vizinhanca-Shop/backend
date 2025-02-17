@@ -69,6 +69,16 @@ export class SignInDto {
   @IsNotEmpty()
   password: string
 }
+
+export class SignInCpfDto {
+  @IsNotEmpty()
+  // @IsCpf()
+  cpf: string
+
+  @IsNotEmpty()
+  password: string
+}
+
 export class RefreshTokenDto {
   @IsNotEmpty()
   refreshToken: string

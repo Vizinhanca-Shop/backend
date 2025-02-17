@@ -18,6 +18,7 @@ import {
   ForgotPasswordcodeDto,
   NewPasswordDto,
   UserCreateResponseDTO,
+  SignInCpfDto,
 } from './dto/auth.dto'
 
 import { FileInterceptor } from '@nestjs/platform-express'
@@ -65,11 +66,13 @@ export class AuthController {
   }
 
   @Post('sign-in')
-  signIn(
-    @Body() data: SignInDto,
-    @Headers('x-request-origin') headers: string,
-  ) {
-    return this.authService.signIn(data, headers)
+  signIn(@Body() data: SignInDto) {
+    return this.authService.signIn(data)
+  }
+
+  @Post('sign-in-cpf')
+  signInCpf(@Body() data: SignInCpfDto) {
+    return this.authService.signInCpf(data)
   }
 
   @Post('sign-out')
