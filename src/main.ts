@@ -45,7 +45,7 @@ async function bootstrap() {
     .setVersion('1.0')
     .addTag('auth')
     .addTag('user')
-    .addServer('/v1')
+    .addServer('/backend/v1')
     .addBearerAuth(
       {
         type: 'http',
