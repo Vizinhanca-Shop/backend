@@ -8,7 +8,7 @@ import prisma from 'prisma/instance'
 import { CreateUserDto, UserDTO } from './dto/user.dto'
 import { ChangePasswordDto, UpdateUserDto, SearchUserDto } from './dto/user.dto'
 import { encrypt } from 'src/utils/encrypt'
-import { jwt, removeInvalidValues, validateCPF } from 'src/utils'
+import { jwt } from 'src/utils'
 import { I18nTranslations } from 'src/i18n/generated/i18n.types'
 // import { S3Service } from 'src/third_party/s3-bucket'
 import { Role, UserStatus } from '@prisma/client'
@@ -25,122 +25,122 @@ export class UserService {
     userId?: number,
     file?: Express.Multer.File,
   ) {
-    try {
-      if (createUserDto?.cpf) {
-        const person = await prisma.person.findUnique({
-          where: { cpf: createUserDto.cpf },
-        })
-
-        if (person) {
-          throw new BadRequestException(
-            this.i18n.t('auth.user.document_already_exist', {
-              lang: I18nContext.current().lang,
-            }),
-          )
-        }
-      }
-
-      if (createUserDto?.email) {
-        const user = await prisma.user.findUnique({
-          where: { email: createUserDto.email },
-        })
-
-        if (user) {
-          throw new BadRequestException(
-            this.i18n.t('auth.user.email_already_exists', {
-              lang: I18nContext.current().lang,
-            }),
-          )
-        }
-      }
-
-      if (createUserDto?.role === Role.ADMIN) {
-        //Sign-up use this service to create a user, this is a double check to avoid a user to create an admin user
-        if (!userId) {
-          throw new UnauthorizedException(
-            'User does not have permission to create an admin user',
-          )
-        }
-
-        const user = await prisma.user.findUnique({
-          where: {
-            id: userId,
-          },
-          select: {
-            role: true,
-          },
-        })
-
-        if (user.role !== Role.ADMIN) {
-          throw new UnauthorizedException(
-            'User does not have permission to create an admin user',
-          )
-        }
-      }
-
-      const { email, password, ...personData } = createUserDto
-      delete personData.role
-      delete personData.avatar
-
-      const user = await prisma.user.create({
-        data: {
-          email: email,
-          password: await encrypt.hash(password),
-          role: createUserDto.role,
-          status: UserStatus.ACTIVE,
-          person: {
-            create: {
-              name: personData.name,
-              birthdate: personData.birthdate,
-              cpf: personData.cpf,
-              isPilot: personData?.isPilot,
-              state: { connect: { id: +personData.stateId } },
-              city: { connect: { id: +personData.cityId } },
-            },
-          },
-        },
-        select: {
-          id: true,
-          email: true,
-          role: true,
-          avatarUrl: true,
-          person: {
-            select: {
-              name: true,
-            },
-          },
-        },
+    if (createUserDto?.cpf) {
+      const person = await prisma.person.findUnique({
+        where: { cpf: createUserDto.cpf },
       })
 
-      if (!user) {
-        throw new UnauthorizedException(
-          this.i18n.t('auth.signin.error', {
+      if (person) {
+        throw new BadRequestException({
+          message: 'Falha na validação',
+          errors: [
+            {
+              field: 'cpf',
+              message: 'CPF já cadastrado',
+            },
+          ],
+        })
+      }
+    }
+
+    if (createUserDto?.email) {
+      const user = await prisma.user.findUnique({
+        where: { email: createUserDto.email },
+      })
+
+      if (user) {
+        throw new BadRequestException(
+          this.i18n.t('auth.user.email_already_exists', {
             lang: I18nContext.current().lang,
           }),
         )
       }
+    }
 
-      if (file) {
-        const url = process.env.API_URL + '/images/avatar/' + file.filename
-
-        return await prisma.user.update({
-          where: {
-            id: user.id,
-          },
-          data: {
-            avatar: {
-              create: {
-                url,
-              },
-            },
-          },
-        })
+    if (createUserDto?.role === Role.ADMIN) {
+      //Sign-up use this service to create a user, this is a double check to avoid a user to create an admin user
+      if (!userId) {
+        throw new UnauthorizedException(
+          'User does not have permission to create an admin user',
+        )
       }
 
-      return user
-    } catch (error) {
-      throw new BadRequestException({ message: error.message, error })
+      const user = await prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+        select: {
+          role: true,
+        },
+      })
+
+      if (user.role !== Role.ADMIN) {
+        throw new UnauthorizedException(
+          'User does not have permission to create an admin user',
+        )
+      }
     }
+
+    const { email, password, ...personData } = createUserDto
+    delete personData.role
+    delete personData.avatar
+
+    const user = await prisma.user.create({
+      data: {
+        email: email,
+        password: await encrypt.hash(password),
+        role: createUserDto.role,
+        status: UserStatus.ACTIVE,
+        person: {
+          create: {
+            name: personData.name,
+            birthdate: personData.birthdate,
+            cpf: personData.cpf,
+            isPilot: personData?.isPilot,
+            state: { connect: { id: +personData.stateId } },
+            city: { connect: { id: +personData.cityId } },
+          },
+        },
+      },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        avatarUrl: true,
+        person: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    })
+
+    if (!user) {
+      throw new UnauthorizedException(
+        this.i18n.t('auth.signin.error', {
+          lang: I18nContext.current().lang,
+        }),
+      )
+    }
+
+    if (file) {
+      const url = process.env.API_URL + '/images/avatar/' + file.filename
+
+      return await prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          avatar: {
+            create: {
+              url,
+            },
+          },
+        },
+      })
+    }
+
+    return user
   }
 
   async findAll(
@@ -355,11 +355,17 @@ export class UserService {
       })
 
       if (person) {
-        throw new BadRequestException(
-          this.i18n.t('auth.user.document_already_exist', {
-            lang: I18nContext.current().lang,
-          }),
-        )
+        throw new BadRequestException({
+          message: 'Falha na validação',
+          errors: [
+            {
+              field: 'cpf',
+              message: this.i18n.t('auth.user.document_already_exist', {
+                lang: I18nContext.current().lang,
+              }),
+            },
+          ],
+        })
       }
     }
 
@@ -396,7 +402,7 @@ export class UserService {
       if (!city) {
         throw new BadRequestException({
           message: 'Falha na validação',
-          fields: [
+          errors: [
             {
               field: 'cityId',
               message: 'Cidade não pertence ao estado selecionado',
@@ -469,10 +475,14 @@ export class UserService {
   async remove({ id, user }: { id?: number; user: UserDTO }) {
     let userId = id
 
+    console.log(user)
+
     // If the user is not an admin, it can only delete itself
-    if (user.role !== Role.ADMIN) {
+    if (user.role !== Role.ADMIN || !userId) {
       userId = user.id
     }
+
+    console.log('adsa', userId)
 
     const deletedUser = await prisma.user.update({
       where: {

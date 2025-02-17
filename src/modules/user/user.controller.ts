@@ -38,7 +38,21 @@ export class UserController {
   @Post()
   @Roles('admin')
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(FileInterceptor('avatar'))
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      storage: diskStorage({
+        destination: './public/images/avatar',
+        filename: (_, file, cb) => {
+          const fileExtName = file.originalname.split('.').pop()
+          const randomName = Array(32)
+            .fill(null)
+            .map(() => Math.round(Math.random() * 16).toString(16))
+            .join('')
+          cb(null, `${randomName}.${fileExtName}`)
+        },
+      }),
+    }),
+  )
   @ApiResponse({
     status: 201,
     schema: {
@@ -225,7 +239,8 @@ export class UserController {
       example: 'User deleted successfully',
     },
   })
-  remove(@Request() req, @Query('id') id?: number) {
+  remove(@Request() req: AuthMiddlewareRequest, @Query('id') id?: number) {
+    console.log(req.user)
     return this.userService.remove({ id, user: req.user })
   }
 

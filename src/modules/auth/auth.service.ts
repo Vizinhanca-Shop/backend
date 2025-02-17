@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
-  UnauthorizedException,
 } from '@nestjs/common'
 import { I18nService, I18nContext } from 'nestjs-i18n'
 
@@ -16,7 +15,6 @@ import {
   SignInCpfDto,
 } from './dto/auth.dto'
 import { I18nTranslations } from 'src/i18n/generated/i18n.types'
-import { Role } from '@prisma/client'
 
 @Injectable()
 export class AuthService {
@@ -74,7 +72,7 @@ export class AuthService {
     const isMatch = await encrypt.compare(password, user?.password)
 
     if (!isMatch) {
-      throw new UnauthorizedException(
+      throw new NotFoundException(
         this.i18n.t('auth.user.not_found', {
           lang: I18nContext.current().lang,
         }),
@@ -229,7 +227,7 @@ export class AuthService {
     if (!city) {
       throw new BadRequestException({
         message: 'Falha na validação',
-        fields: [
+        errors: [
           {
             field: 'cityId',
             message: 'Cidade não pertence ao estado selecionado',
@@ -312,11 +310,11 @@ export class AuthService {
     const expiredAt = new Date(validToken.exp * 1000)
 
     if (expiredAt < new Date()) {
-      throw new UnauthorizedException('Expired refresh token')
+      throw new NotFoundException('Expired refresh token')
     }
 
     if (!this.usersService.findOneByEmail(validToken.email)) {
-      throw new UnauthorizedException(
+      throw new NotFoundException(
         this.i18n.t('auth.user.not_found', {
           lang: I18nContext.current().lang,
         }),

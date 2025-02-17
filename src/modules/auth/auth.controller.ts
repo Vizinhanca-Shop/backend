@@ -53,7 +53,7 @@ export class AuthController {
     if (data.isPilot && !data.canac) {
       throw new BadRequestException({
         message: 'Falha na validação',
-        fields: [
+        errors: [
           {
             field: 'canac',
             message: 'CANAC é obrigatório para pilotos',
@@ -86,7 +86,7 @@ export class AuthController {
     if (!req.user) {
       throw new BadRequestException({
         message: 'Falha na validação',
-        fields: [
+        errors: [
           {
             field: 'token',
             message: 'Token inválido',
@@ -124,7 +124,7 @@ export class AuthController {
     schema: {
       example: {
         message: 'Falha na validação',
-        fields: [
+        errors: [
           {
             field: 'email',
             message: 'E-mail inválido',
