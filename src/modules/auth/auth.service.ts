@@ -167,7 +167,7 @@ export class AuthService {
     const isMatch = await encrypt.compare(password, user?.password)
 
     if (!isMatch) {
-      throw new UnauthorizedException(
+      throw new NotFoundException(
         this.i18n.t('auth.user.not_found', {
           lang: I18nContext.current().lang,
         }),
