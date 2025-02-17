@@ -220,7 +220,14 @@ export class UserService {
     })
 
     if (!users.length) {
-      return users
+      return {
+        meta: {
+          nextPage: null,
+          previousPage: null,
+          totalPages: 0,
+        },
+        data: [],
+      }
     }
 
     const pages = users.length > 0 ? Math.ceil(count / limit) : 0
