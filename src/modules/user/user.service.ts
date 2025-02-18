@@ -99,6 +99,7 @@ export class UserService {
             isPilot: personData?.isPilot,
             state: { connect: { id: +personData.stateId } },
             city: { connect: { id: +personData.cityId } },
+            canac: personData.canac,
           },
         },
       },

@@ -29,7 +29,11 @@ export class CreateUserDto {
   birthdate: Date
 
   @IsNotEmpty()
+  @Transform(({ value }) => value.replace(/\D/g, ''))
   cpf: string
+
+  @IsOptional()
+  canac?: string
 
   @ApiProperty({ type: 'string', format: 'binary', required: false })
   @IsOptional()
