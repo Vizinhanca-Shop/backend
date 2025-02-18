@@ -70,16 +70,16 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       # Step 10: Build, tag, and push the Docker image to ECR.
-      # - name: Build, tag, and push Docker image
-      #   run: |
-      #     REPO_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}
-      #     echo "Building image with tag: $VERSION"
-      #     docker build -t $REPO_URI:$VERSION -f ./registry/production/Dockerfile .
-      #     # Also tag the image as "latest"
-      #     docker tag $REPO_URI:$VERSION $REPO_URI:latest
-      #     echo "Pushing image tags..."
-      #     docker push $REPO_URI:$VERSION
-      #     docker push $REPO_URI:latest
+      - name: Build, tag, and push Docker image
+        run: |
+          REPO_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}
+          echo "Building image with tag: $VERSION"
+          docker build -t $REPO_URI:$VERSION -f ./registry/production/Dockerfile .
+          # Also tag the image as "latest"
+          docker tag $REPO_URI:$VERSION $REPO_URI:latest
+          echo "Pushing image tags..."
+          docker push $REPO_URI:$VERSION
+          docker push $REPO_URI:latest
 
       # Step 11: Deploy image to EC2
       - name: Deploy to EC2
