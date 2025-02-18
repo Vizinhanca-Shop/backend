@@ -74,6 +74,7 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   @IsCpf()
+  @Transform(({ value }) => value.replace(/\D/g, ''))
   cpf?: string
 
   @IsOptional()
