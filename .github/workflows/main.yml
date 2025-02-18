@@ -119,10 +119,13 @@ jobs:
 
             echo "Pulling latest Docker image..."
             pwd
-            ls
+            ls -la
             cd $DOCKER_COMPOSE_DIR
+            ls -la
+            cd centerlight-backend
+            ls -la
             pwd
-            ls
+            ls -la
             docker-compose -f compose-production.yml pull
 
             echo "Restarting services..."
