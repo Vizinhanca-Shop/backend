@@ -88,7 +88,9 @@ jobs:
 
           chmod 600 private_key.pem
 
-          ssh -i private_key.pem $EC2_USER@$EC2_HOST
+          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i private_key.pem $EC2_USER@$EC2_HOST << 'EOF'
+            echo "Connected successfully!"
+          
             echo "Checking for AWS CLI..."
             if ! command -v aws &> /dev/null; then
               echo "AWS CLI not found. Installing..."
