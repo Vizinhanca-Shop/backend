@@ -120,9 +120,7 @@ jobs:
             echo "Pulling latest Docker image..."
             pwd
             ls -la
-            cd $DOCKER_COMPOSE_DIR
-            ls -la
-            cd centerlight-backend
+            cd ~/centerlight/centerlight-backend
             ls -la
             pwd
             ls -la
