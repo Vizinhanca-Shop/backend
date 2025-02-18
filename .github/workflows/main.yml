@@ -72,11 +72,13 @@ jobs:
         run: |
           echo "Deploying to EC2..."
           echo "${SSH_PRIVATE_KEY}" > private_key.pem
+          echo $EC2_USER
+          echo $EC2_HOST
+          echo "${ssh -i private_key.pem $EC2_USER@$EC2_HOST}"
+
           chmod 600 private_key.pem
 
-          ssh -i private_key.pem $EC2_USER@$EC2_HOST << 'EOF'
-            set -e
-
+          ssh -i private_key.pem $EC2_USER@$EC2_HOST
             echo "Checking for AWS CLI..."
             if ! command -v aws &> /dev/null; then
               echo "AWS CLI not found. Installing..."
