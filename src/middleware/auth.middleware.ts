@@ -20,6 +20,11 @@ const publicRoutes = ['auth', 'public', 'state', 'schema', 'jwk']
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
   async use(req: AuthMiddlewareRequest, next: (value?: unknown) => void) {
+    console.log({
+      headers: req.headers,
+      originalUrl: req.originalUrl,
+      method: req.method,
+    })
     const bearerHeader = req.headers.authorization
     const accessToken = bearerHeader?.split(' ')[1]
     const token = accessToken ?? bearerHeader
