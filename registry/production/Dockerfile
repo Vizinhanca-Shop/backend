@@ -13,7 +13,4 @@ RUN yarn install
 
 RUN NODE_OPTIONS="--max-old-space-size=2048" yarn build
 
-RUN chmod +x ./scripts/generate-jwk.sh
-RUN ./scripts/generate-jwk.sh
-
 EXPOSE 5000
