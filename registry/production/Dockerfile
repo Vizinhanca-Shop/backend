@@ -11,6 +11,9 @@ RUN apk add openssl
 RUN npm install -g yarn --force
 RUN yarn install
 
+RUN chmod +x ./scripts/generate-jwk.sh
+RUN ./scripts/generate-jwk.sh
+
 RUN NODE_OPTIONS="--max-old-space-size=2048" yarn build
 
 EXPOSE 5000

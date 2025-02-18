@@ -7,3 +7,6 @@ COPY package.json ./
 COPY ./ ./
 
 RUN yarn install
+
+RUN chmod +x ./scripts/generate-jwk.sh
+RUN ./scripts/generate-jwk.sh
