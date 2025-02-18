@@ -74,7 +74,6 @@ jobs:
           echo "${SSH_PRIVATE_KEY}" > private_key.pem
           echo $EC2_USER
           echo $EC2_HOST
-          echo "${ssh -i private_key.pem $EC2_USER@$EC2_HOST}"
 
           chmod 600 private_key.pem
 
