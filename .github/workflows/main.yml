@@ -10,8 +10,11 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     env:
-      ECR_REPOSITORY: backend # Set your ECR repository name here.
-      AWS_REGION: sa-east-1 # AWS region—update if needed.
+      ECR_REPOSITORY: backend  # Set your ECR repository name here.
+      AWS_REGION: sa-east-1    # AWS region—update if needed.
+      EC2_USER: ${{ secrets.EC2_USER }}  # Default for Ubuntu AMI; use "ec2-user" for Amazon Linux
+      EC2_HOST: ${{ secrets.EC2_HOST }}  # Ensure this is set in GitHub Secrets
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}  # Ensure this secret is set in your GitHub repository settings
 
     steps:
       # Step 1: Checkout the repository.
