@@ -66,3 +66,42 @@ jobs:
           echo "Pushing image tags..."
           docker push $REPO_URI:$VERSION
           docker push $REPO_URI:latest
+          
+      # Step 10: Deploy image to EC2
+      - name: Deploy to EC2
+        run: |
+          echo "Deploying to EC2..."
+          echo "${SSH_PRIVATE_KEY}" > private_key.pem
+          chmod 600 private_key.pem
+
+          ssh -o StrictHostKeyChecking=no -i private_key.pem $EC2_USER@$EC2_HOST << 'EOF'
+            set -e
+
+            echo "Checking for AWS CLI..."
+            if ! command -v aws &> /dev/null; then
+              echo "AWS CLI not found. Installing..."
+              sudo apt-get update -y
+              sudo apt-get install -y unzip curl
+              curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+              unzip awscliv2.zip
+              sudo ./aws/install
+              rm -rf aws awscliv2.zip
+            else
+              echo "AWS CLI is already installed."
+            fi
+
+            echo "Logging into Amazon ECR..."
+            aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $(aws sts get-caller-identity --query 'Account' --output text).dkr.ecr.$AWS_REGION.amazonaws.com
+
+            echo "Pulling latest Docker image..."
+            cd $DOCKER_COMPOSE_DIR
+            docker-compose pull
+
+            echo "Restarting services..."
+            docker-compose down
+            docker-compose up -d
+
+            echo "Deployment completed!"
+          EOF
+
+          rm -f private_key.pem
