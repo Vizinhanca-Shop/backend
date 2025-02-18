@@ -1,12 +1,12 @@
 #!/bin/sh
 
-if [ -z "$JWT_SECRET" ]; then
-  echo "Please set the JWT_SECRET environment variable"
+if [ -z "$JWT_REFRESH_SECRET" ]; then
+  echo "Please set the JWT_REFRESH_SECRET environment variable"
   exit 1
 fi
 
 mkdir -p ./public/jwk
-K_VALUE=$(echo -n "$JWT_SECRET" | base64)
+K_VALUE=$(echo -n "$JWT_REFRESH_SECRET" | base64)
 
 cat > ./public/jwk/symmetric.json << EOF
 {
