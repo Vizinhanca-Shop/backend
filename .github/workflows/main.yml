@@ -118,7 +118,7 @@ jobs:
             aws ecr get-login-password --region "${{ env.AWS_REGION }}" | docker login --username AWS --password-stdin $(aws sts get-caller-identity --query 'Account' --output text).dkr.ecr."${{ env.AWS_REGION }}".amazonaws.com
 
             echo "Pulling latest Docker image..."
-            cd $DOCKER_COMPOSE_DIR
+            cd "${{ env.DOCKER_COMPOSE_DIR }}"
 
             docker-compose -f compose-production.yml pull
 
