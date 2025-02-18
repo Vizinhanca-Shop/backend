@@ -4,14 +4,14 @@ name: Build, Tag & Deploy Node.js Project
 on:
   push:
     tags:
-      - 'v*.*.*'  # Adjust the pattern to match your versioning scheme
+      - 'v*.*.*' # Adjust the pattern to match your versioning scheme
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     env:
-      ECR_REPOSITORY: backend  # Set your ECR repository name here.
-      AWS_REGION: sa-east-1    # AWS region—update if needed.
+      ECR_REPOSITORY: backend # Set your ECR repository name here.
+      AWS_REGION: sa-east-1 # AWS region—update if needed.
 
     steps:
       # Step 1: Checkout the repository.
@@ -33,16 +33,24 @@ jobs:
       # - name: Run tests
       #   run: yarn test
 
-      # Step 5: Build the project.
+      # Step 5: Create symmetric key
+      - name: Create symmetric key
+        run: |
+          chmod +x ./scripts/generate-jwk.sh
+          ./scripts/generate-jwk.sh
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
+      # Step 6: Build the project.
       - name: Build project
         run: yarn run build
 
-      # Step 6: Extract version from the Git tag 
+      # Step 7: Extract version from the Git tag
       - name: Get version from tag
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
-      # Step 7: Configure AWS credentials using repository secrets.
+      # Step 8: Configure AWS credentials using repository secrets.
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -50,12 +58,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      # Step 8: Login to Amazon ECR.
+      # Step 9: Login to Amazon ECR.
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      # Step 9: Build, tag, and push the Docker image to ECR.
+      # Step 10: Build, tag, and push the Docker image to ECR.
       - name: Build, tag, and push Docker image
         run: |
           REPO_URI=${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}
@@ -66,8 +74,8 @@ jobs:
           echo "Pushing image tags..."
           docker push $REPO_URI:$VERSION
           docker push $REPO_URI:latest
-          
-      # Step 10: Deploy image to EC2
+
+      # Step 11: Deploy image to EC2
       - name: Deploy to EC2
         run: |
           echo "Deploying to EC2..."
