@@ -17,7 +17,7 @@ jobs:
       SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}  # Ensure this secret is set in your GitHub repository settings
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      DOCKER_COMPOSE_DIR: "/home/ubuntu/centerlight/centerlight-backend"
+      DOCKER_COMPOSE_DIR: "~/centerlight/centerlight-backend"
 
     steps:
       # Step 1: Checkout the repository.
@@ -118,12 +118,8 @@ jobs:
             aws ecr get-login-password --region "${{ env.AWS_REGION }}" | docker login --username AWS --password-stdin $(aws sts get-caller-identity --query 'Account' --output text).dkr.ecr."${{ env.AWS_REGION }}".amazonaws.com
 
             echo "Pulling latest Docker image..."
-            pwd
-            ls -la
-            cd ~/centerlight/centerlight-backend
-            ls -la
-            pwd
-            ls -la
+            cd $DOCKER_COMPOSE_DIR
+
             docker-compose -f compose-production.yml pull
 
             echo "Restarting services..."
