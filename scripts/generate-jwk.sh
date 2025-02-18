@@ -1,14 +1,5 @@
 #!/bin/sh
 
-# Load environment variables from .env
-if [ -f .env ]; then
-    export $(cat .env | grep -v '^#' | xargs)
-else
-    echo "${RED}Error: .env file not found${NC}"
-    exit 1
-fi
-
-
 if [ -z "$JWT_SECRET" ]; then
   echo "Please set the JWT_SECRET environment variable"
   exit 1
