@@ -2,11 +2,7 @@ services:
   backend:
     restart: always
     container_name: '${API_HOST}'
-    build:
-      dockerfile: ./registry/production/Dockerfile
-      context: ./
-    volumes:
-      - './:/usr/src/backend'
+    image: 484907529736.dkr.ecr.sa-east-1.amazonaws.com/backend
     command: 'sh -c ''NODE_OPTIONS="--max-old-space-size=2048" yarn start:prod --host'''
     env_file:
       - .env
