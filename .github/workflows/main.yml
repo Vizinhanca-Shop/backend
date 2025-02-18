@@ -82,13 +82,14 @@ jobs:
       - name: Deploy to EC2
         run: |
           echo "Deploying to EC2..."
-          echo "${SSH_PRIVATE_KEY}" > private_key.pem
+          echo "${SSH_PRIVATE_KEY}" | base64 --decode > private_key.pem
           echo $EC2_USER
           echo $EC2_HOST
+          echo ${SSH_PRIVATE_KEY}
 
           chmod 600 private_key.pem
 
-          ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -i private_key.pem $EC2_USER@$EC2_HOST << 'EOF'
+          ssh -o StrictHostKeyChecking=no -o IdentitiesOnly=yes -o UserKnownHostsFile=/dev/null -i private_key.pem $EC2_USER@$EC2_HOST << 'EOF'
             echo "Connected successfully!"
           
             echo "Checking for AWS CLI..."
