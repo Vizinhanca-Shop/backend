@@ -125,7 +125,7 @@ export class UserService {
     }
 
     if (file) {
-      const url = process.env.API_URL + '/images/avatar/' + file.filename
+      const url = '/images/avatar/' + file.filename
 
       return await prisma.user.update({
         where: {
@@ -425,11 +425,11 @@ export class UserService {
           avatar: {
             upsert: {
               create: {
-                url: process.env.API_URL + '/images/avatar/' + file.filename,
+                url: '/images/avatar/' + file.filename,
                 key: file.filename,
               },
               update: {
-                url: process.env.API_URL + '/images/avatar/' + file.filename,
+                url: '/images/avatar/' + file.filename,
                 key: file.filename,
               },
             },
