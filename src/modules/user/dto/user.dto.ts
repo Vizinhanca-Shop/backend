@@ -29,7 +29,7 @@ export class CreateUserDto {
   birthdate: Date
 
   @IsNotEmpty()
-  @Transform(({ value }) => value.replace(/\D/g, ''))
+  @IsCpf()
   cpf: string
 
   @IsOptional()
@@ -78,7 +78,6 @@ export class UpdateUserDto {
   @IsString()
   @IsOptional()
   @IsCpf()
-  @Transform(({ value }) => value.replace(/\D/g, ''))
   cpf?: string
 
   @IsOptional()

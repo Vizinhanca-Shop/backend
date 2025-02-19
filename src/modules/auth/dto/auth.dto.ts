@@ -33,7 +33,6 @@ export class SignUpDto {
   @IsOptional()
   @IsCpf()
   @IsUnique('person', 'cpf')
-  @Transform(({ value }) => value.replace(/\D/g, ''))
   cpf: string
 
   @ApiProperty({ type: 'string', format: 'binary', required: false })
