@@ -10,14 +10,14 @@ import { ChangePasswordDto, UpdateUserDto, SearchUserDto } from './dto/user.dto'
 import { encrypt } from 'src/utils/encrypt'
 import { jwt } from 'src/utils'
 import { I18nTranslations } from 'src/i18n/generated/i18n.types'
-// import { S3Service } from 'src/third_party/s3-bucket'
+import { S3Service } from 'src/third_party/s3-bucket'
 import { Role, UserStatus } from '@prisma/client'
 
 @Injectable()
 export class UserService {
   constructor(
     private readonly i18n: I18nService<I18nTranslations>,
-    // private readonly s3Service: S3Service,
+    private readonly s3Service: S3Service,
   ) {}
 
   async create(
@@ -125,7 +125,7 @@ export class UserService {
     }
 
     if (file) {
-      const url = '/images/avatar/' + file.filename
+      const bucketImage = await this.s3Service.uploadFile(file, 'avatar')
 
       return await prisma.user.update({
         where: {
@@ -134,7 +134,8 @@ export class UserService {
         data: {
           avatar: {
             create: {
-              url,
+              url: bucketImage.Location,
+              key: bucketImage.Key,
             },
           },
         },
@@ -413,6 +414,12 @@ export class UserService {
       }
     }
 
+    if (file) {
+      const bucketImage = await this.s3Service.uploadFile(file, 'avatar')
+      file.filename = bucketImage.Key
+      file.destination = bucketImage.Location
+    }
+
     const updatedUser = await prisma.user.update({
       where: {
         id: userId,
@@ -425,11 +432,11 @@ export class UserService {
           avatar: {
             upsert: {
               create: {
-                url: '/images/avatar/' + file.filename,
+                url: file.destination,
                 key: file.filename,
               },
               update: {
-                url: '/images/avatar/' + file.filename,
+                url: file.destination,
                 key: file.filename,
               },
             },
@@ -478,14 +485,10 @@ export class UserService {
   async remove({ id, user }: { id?: number; user: UserDTO }) {
     let userId = id
 
-    console.log(user)
-
     // If the user is not an admin, it can only delete itself
     if (user.role !== Role.ADMIN || !userId) {
       userId = user.id
     }
-
-    console.log('adsa', userId)
 
     const deletedUser = await prisma.user.update({
       where: {

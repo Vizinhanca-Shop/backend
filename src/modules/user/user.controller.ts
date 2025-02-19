@@ -26,7 +26,6 @@ import { ChangePasswordDto, UpdateUserDto, SearchUserDto } from './dto/user.dto'
 import { RolesGuard } from 'src/guard/role.guard'
 import { Roles } from 'src/custom/decorators/roles.decorator'
 import { AuthMiddlewareRequest } from 'src/types/type'
-import { diskStorage } from 'multer'
 
 @ApiTags('user')
 @Controller('user')
@@ -38,21 +37,7 @@ export class UserController {
   @Post()
   @Roles('admin')
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(
-    FileInterceptor('avatar', {
-      storage: diskStorage({
-        destination: './public/images/avatar',
-        filename: (_, file, cb) => {
-          const fileExtName = file.originalname.split('.').pop()
-          const randomName = Array(32)
-            .fill(null)
-            .map(() => Math.round(Math.random() * 16).toString(16))
-            .join('')
-          cb(null, `${randomName}.${fileExtName}`)
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('avatar'))
   @ApiResponse({
     status: 201,
     schema: {
@@ -161,29 +146,12 @@ export class UserController {
   @Patch('/profile')
   @Roles('admin', 'manager', 'user')
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(
-    FileInterceptor('avatar', {
-      storage: diskStorage({
-        destination: './public/images/avatar',
-        filename: (_, file, cb) => {
-          const fileExtName = file.originalname.split('.').pop()
-          const randomName = Array(32)
-            .fill(null)
-            .map(() => Math.round(Math.random() * 16).toString(16))
-            .join('')
-          cb(null, `${randomName}.${fileExtName}`)
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('avatar'))
   updateProfile(
     @Request() req,
     @Body() updateUserDto: UpdateUserDto,
     @UploadedFile() file?: Express.Multer.File,
   ) {
-    console.log('file', file)
-    console.log('updateUserDto', updateUserDto)
-
     return this.userService.update(req.user.id, updateUserDto, file)
   }
 
@@ -211,21 +179,7 @@ export class UserController {
   @Patch()
   @Roles('admin', 'manager', 'user')
   @ApiConsumes('multipart/form-data')
-  @UseInterceptors(
-    FileInterceptor('avatar', {
-      storage: diskStorage({
-        destination: './public/images/avatar',
-        filename: (_, file, cb) => {
-          const fileExtName = file.originalname.split('.').pop()
-          const randomName = Array(32)
-            .fill(null)
-            .map(() => Math.round(Math.random() * 16).toString(16))
-            .join('')
-          cb(null, `${randomName}.${fileExtName}`)
-        },
-      }),
-    }),
-  )
+  @UseInterceptors(FileInterceptor('avatar'))
   update(
     @Query('id') id: number,
     @Body() updateUserDto: UpdateUserDto,
@@ -243,7 +197,6 @@ export class UserController {
     },
   })
   remove(@Request() req: AuthMiddlewareRequest, @Query('id') id?: number) {
-    console.log(req.user)
     return this.userService.remove({ id, user: req.user })
   }
 
