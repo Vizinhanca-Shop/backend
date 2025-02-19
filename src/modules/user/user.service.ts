@@ -95,7 +95,7 @@ export class UserService {
           create: {
             name: personData.name,
             birthdate: personData.birthdate,
-            cpf: personData.cpf,
+            cpf: personData.cpf.replace(/\D/g, ''),
             isPilot: personData?.isPilot,
             state: { connect: { id: +personData.stateId } },
             city: { connect: { id: +personData.cityId } },
@@ -440,7 +440,9 @@ export class UserService {
             ...(updateUserDto?.canac && { canac: updateUserDto.canac }),
             ...(updateUserDto?.isPilot && { isPilot: updateUserDto.isPilot }),
             ...(updateUserDto?.name && { name: updateUserDto.name }),
-            ...(updateUserDto?.cpf && { cpf: updateUserDto.cpf }),
+            ...(updateUserDto?.cpf && {
+              cpf: updateUserDto.cpf.replace(/\D/g, ''),
+            }),
             ...(updateUserDto?.cityId && { cityId: personData.cityId }),
             ...(updateUserDto?.stateId && { stateId: personData.stateId }),
             ...(updateUserDto?.birthdate && {
