@@ -1,30 +1,66 @@
+version: "3"
+
 services:
+  traefik:
+    image: "traefik:v2.4"
+    container_name: "traefik"
+    networks:
+      - default
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--entrypoints.http.address=:80"
+      - "--entrypoints.https.address=:443"
+      - "--global.sendAnonymousUsage=false"
+      - "--certificatesresolvers.ssl.acme.httpchallenge=true"
+      - "--certificatesresolvers.ssl.acme.httpchallenge.entrypoint=http"
+      - "--certificatesresolvers.ssl.acme.email=${CERTIFICATE_EMAIL}"
+      - "--certificatesresolvers.ssl.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "443:443"
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "./letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
   backend:
     restart: always
-    container_name: '${API_HOST}'
-    image: 484907529736.dkr.ecr.sa-east-1.amazonaws.com/backend
-    command: 'sh -c ''NODE_OPTIONS="--max-old-space-size=2048" yarn start:prod --host'''
-    env_file:
-      - .env
-    ports:
-      - ${API_PORT}:${API_PORT}
-    environment:
-      VIRTUAL_HOST: '${API_HOST}'
-      LETSENCRYPT_HOST: '${API_HOST}'
-      API_PORT: '${API_PORT}'
-      API_URL: '${API_URL}'
-      DATABASE_URL: '${DATABASE_URL}'
-      POSTGRES_HOST: '${POSTGRES_HOST}'
-      POSTGRES_PORT: '${POSTGRES_PORT}'
-      POSTGRES_DB: '${POSTGRES_DB}'
-      POSTGRES_USER: '${POSTGRES_USER}'
-      POSTGRES_PASSWORD: '${POSTGRES_PASSWORD}'
-      JWT_SECRET: '${JWT_SECRET}'
-      JWT_REFRESH_SECRET: '${JWT_REFRESH_SECRET}'
-      HASH_SALT: '${HASH_SALT}'
+    container_name: "api-vizinhanca-shopping.com.br"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
-      - app_network
+      - default
+    command: sh -c "yarn install && npx prisma generate && yarn build && npx prisma migrate deploy && yarn start:prod"
+    build:
+      context: ./
+      dockerfile: ./registry/${ENVIRONMENT}/Dockerfile
+    volumes:
+      - "./:/usr/src/app"
+    ports:
+      - "${API_PORT}:${API_PORT}"
+    environment:
+      API_PORT: "${API_PORT}"
+      API_URL: "${API_URL}"
+      DATABASE_URL: "${DATABASE_URL}"
+      POSTGRES_HOST: "${POSTGRES_HOST}"
+      POSTGRES_PORT: "${POSTGRES_PORT}"
+      POSTGRES_DB: "${POSTGRES_DB}"
+      POSTGRES_USER: "${POSTGRES_USER}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD}"
+      JWT_SECRET: "${JWT_SECRET}"
+      JWT_REFRESH_SECRET: "${JWT_REFRESH_SECRET}"
+      HASH_SALT: "${HASH_SALT}"
+    labels:
+      traefik.enable: true
+      traefik.http.routers.backend1.service: backend
+      traefik.http.routers.backend.rule: Host(`${API_HOST}`)
+      traefik.http.routers.backend.entrypoints: http
+      traefik.http.routers.backend-secure.rule: Host(`${API_HOST}`)
+      traefik.http.routers.backend-secure.entrypoints: https
+      traefik.http.routers.backend-secure.tls.certresolver: ssl
+      traefik.http.services.backend.loadbalancer.server.port: ${API_PORT}
 
 networks:
-  app_network:
-    name: app_network
+  default:
+    driver: bridge
