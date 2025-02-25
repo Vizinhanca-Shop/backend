@@ -1,6 +1,6 @@
 generator client {
   provider      = "prisma-client-js"
-  binaryTargets = ["native", "linux-musl", "linux-musl-openssl-3.0.x"]
+  binaryTargets = ["native", "linux-musl", "linux-musl-openssl-3.0.x", "linux-musl-arm64-openssl-3.0.x"]
 }
 
 datasource db {
@@ -24,7 +24,6 @@ model State {
   name   String   @unique
   code   String   @unique
   city   City[]
-  person Person[]
 
   @@map("state")
 }
@@ -36,7 +35,6 @@ model City {
   name_unaccent String?
   stateId       Int
   state         State    @relation(fields: [stateId], references: [id])
-  person        Person[]
 
   @@map("city")
 }
@@ -53,7 +51,6 @@ model User {
   deletedAt DateTime?
 
   userRecoveryCode userRecoveryCode?
-  session          Session?
   status           UserStatus        @default(ACTIVE)
   person           Person?
 
@@ -65,14 +62,7 @@ model Person {
   userId    Int       @unique
   user      User      @relation(fields: [userId], references: [id])
   name      String
-  canac     String?   @unique
-  cpf       String    @unique
-  birthdate DateTime
-  isPilot   Boolean   @default(false)
-  stateId   Int
-  state     State     @relation(fields: [stateId], references: [id])
-  cityId    Int
-  city      City      @relation(fields: [cityId], references: [id])
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
@@ -113,16 +103,4 @@ model Avatar {
   User      User?
 
   @@map("avatar")
-}
-
-model Session {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @unique
-  user      User     @relation(fields: [userId], references: [id])
-  token     String   @unique
-  expiredAt DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@map("sessions")
 }
