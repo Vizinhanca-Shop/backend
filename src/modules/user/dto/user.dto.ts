@@ -28,10 +28,6 @@ export class CreateUserDto {
   @IsNotEmpty()
   birthdate: Date
 
-  @IsNotEmpty()
-  @IsCpf()
-  cpf: string
-
   @IsOptional()
   canac?: string
 

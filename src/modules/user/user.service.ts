@@ -25,24 +25,6 @@ export class UserService {
     userId?: number,
     file?: Express.Multer.File,
   ) {
-    if (createUserDto?.cpf) {
-      const person = await prisma.person.findUnique({
-        where: { cpf: createUserDto.cpf },
-      })
-
-      if (person) {
-        throw new BadRequestException({
-          message: 'Falha na validação',
-          errors: [
-            {
-              field: 'cpf',
-              message: 'CPF já cadastrado',
-            },
-          ],
-        })
-      }
-    }
-
     if (createUserDto?.email) {
       const user = await prisma.user.findUnique({
         where: { email: createUserDto.email },
@@ -94,12 +76,6 @@ export class UserService {
         person: {
           create: {
             name: personData.name,
-            birthdate: personData.birthdate,
-            cpf: personData.cpf.replace(/\D/g, ''),
-            isPilot: personData?.isPilot,
-            state: { connect: { id: +personData.stateId } },
-            city: { connect: { id: +personData.cityId } },
-            canac: personData.canac,
           },
         },
       },
@@ -299,23 +275,6 @@ export class UserService {
         person: {
           select: {
             name: true,
-            cpf: true,
-            canac: true,
-            birthdate: true,
-            isPilot: true,
-            city: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-            state: {
-              select: {
-                id: true,
-                name: true,
-                code: true,
-              },
-            },
           },
         },
       },
@@ -328,6 +287,7 @@ export class UserService {
         }),
       )
     }
+
     return user
   }
 
@@ -343,33 +303,6 @@ export class UserService {
     file: Express.Multer.File,
   ) {
     const { email, password, status, ...personData } = updateUserDto
-
-    if (personData?.cpf) {
-      const person = await prisma.person.findUnique({
-        where: {
-          user: {
-            id: {
-              not: userId,
-            },
-          },
-          cpf: updateUserDto.cpf?.replace(/\D/g, ''),
-        },
-      })
-
-      if (person) {
-        throw new BadRequestException({
-          message: 'Falha na validação',
-          errors: [
-            {
-              field: 'cpf',
-              message: this.i18n.t('auth.user.document_already_exist', {
-                lang: I18nContext.current().lang,
-              }),
-            },
-          ],
-        })
-      }
-    }
 
     if (email) {
       const existUser = await prisma.user.findUnique({
@@ -447,9 +380,6 @@ export class UserService {
             ...(updateUserDto?.canac && { canac: updateUserDto.canac }),
             ...(updateUserDto?.isPilot && { isPilot: updateUserDto.isPilot }),
             ...(updateUserDto?.name && { name: updateUserDto.name }),
-            ...(updateUserDto?.cpf && {
-              cpf: updateUserDto.cpf.replace(/\D/g, ''),
-            }),
             ...(updateUserDto?.cityId && { cityId: personData.cityId }),
             ...(updateUserDto?.stateId && { stateId: personData.stateId }),
             ...(updateUserDto?.birthdate && {
@@ -466,14 +396,7 @@ export class UserService {
         avatarUrl: true,
         person: {
           select: {
-            name: true,
-            birthdate: true,
-            canac: true,
-            city: true,
-            cpf: true,
-            cityId: true,
-            stateId: true,
-            isPilot: true,
+            name: true
           },
         },
       },
@@ -501,8 +424,6 @@ export class UserService {
         person: {
           update: {
             name: `${userId}@deleted-name`,
-            cpf: `${userId}@deleted-cpf`,
-            canac: `${userId}@deleted-canac`,
           },
         },
       },
@@ -511,7 +432,6 @@ export class UserService {
         person: {
           select: {
             id: true,
-            cpf: true,
           },
         },
       },

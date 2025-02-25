@@ -51,6 +51,7 @@ model User {
   deletedAt DateTime?
 
   userRecoveryCode userRecoveryCode?
+  session          Session?
   status           UserStatus        @default(ACTIVE)
   person           Person?
 
@@ -62,7 +63,6 @@ model Person {
   userId    Int       @unique
   user      User      @relation(fields: [userId], references: [id])
   name      String
-
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
@@ -103,4 +103,16 @@ model Avatar {
   User      User?
 
   @@map("avatar")
+}
+
+model Session {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  token     String   @unique
+  expiredAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("sessions")
 }

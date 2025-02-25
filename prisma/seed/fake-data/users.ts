@@ -7,10 +7,6 @@ export const fakeUsers = [
     role: Role.ADMIN,
     person: {
       name: 'Alice Johnson',
-      birthdate: new Date('1985-02-15'),
-      cpf: '12945678609',
-      stateId: 1,
-      cityId: 1,
     },
   },
   {
@@ -19,10 +15,6 @@ export const fakeUsers = [
     role: Role.ADMIN,
     person: {
       name: 'Bob Smith',
-      birthdate: new Date('1987-08-30'),
-      cpf: '23456789019',
-      stateId: 2,
-      cityId: 5,
     },
   },
   {
@@ -31,10 +23,6 @@ export const fakeUsers = [
     role: Role.MANAGER,
     person: {
       name: 'Charlie Davis',
-      birthdate: new Date('1990-06-12'),
-      cpf: '34567890129',
-      stateId: 3,
-      cityId: 7,
     },
   },
   {
@@ -43,10 +31,6 @@ export const fakeUsers = [
     role: Role.MANAGER,
     person: {
       name: 'Diana Martinez',
-      birthdate: new Date('1982-11-25'),
-      cpf: '45678901239',
-      stateId: 4,
-      cityId: 2,
     },
   },
   {
@@ -55,10 +39,6 @@ export const fakeUsers = [
     role: Role.USER,
     person: {
       name: 'Evelyn Garcia',
-      birthdate: new Date('1995-03-18'),
-      cpf: '56789012349',
-      stateId: 5,
-      cityId: 9,
     },
   },
   {
@@ -67,10 +47,6 @@ export const fakeUsers = [
     role: Role.USER,
     person: {
       name: 'Frank Moore',
-      birthdate: new Date('1993-12-22'),
-      cpf: '67890123459',
-      stateId: 6,
-      cityId: 3,
     },
   },
   {
@@ -79,10 +55,6 @@ export const fakeUsers = [
     role: Role.USER,
     person: {
       name: 'Grace Lee',
-      birthdate: new Date('1998-05-07'),
-      cpf: '78901234569',
-      stateId: 7,
-      cityId: 4,
     },
   },
   {
@@ -91,10 +63,6 @@ export const fakeUsers = [
     role: Role.USER,
     person: {
       name: 'Henry Walker',
-      birthdate: new Date('1991-09-11'),
-      cpf: '89012345679',
-      stateId: 8,
-      cityId: 6,
     },
   },
   {
@@ -103,10 +71,6 @@ export const fakeUsers = [
     role: Role.ADMIN,
     person: {
       name: 'Irene Young',
-      birthdate: new Date('1980-04-23'),
-      cpf: '90123456789',
-      stateId: 9,
-      cityId: 8,
     },
   },
   {
@@ -115,10 +79,6 @@ export const fakeUsers = [
     role: Role.MANAGER,
     person: {
       name: 'Jack Harris',
-      birthdate: new Date('1986-07-15'),
-      cpf: '01234567899',
-      stateId: 10,
-      cityId: 10,
     },
   },
   {
@@ -127,10 +87,6 @@ export const fakeUsers = [
     role: Role.USER,
     person: {
       name: 'Karen White',
-      birthdate: new Date('1994-10-19'),
-      cpf: '11234567899',
-      stateId: 11,
-      cityId: 11,
     },
   },
   {
@@ -139,10 +95,6 @@ export const fakeUsers = [
     role: Role.USER,
     person: {
       name: 'Leo Hall',
-      birthdate: new Date('1989-01-25'),
-      cpf: '12234567899',
-      stateId: 12,
-      cityId: 12,
     },
   },
   {
@@ -151,10 +103,6 @@ export const fakeUsers = [
     role: Role.ADMIN,
     person: {
       name: 'Mia Allen',
-      birthdate: new Date('1978-03-10'),
-      cpf: '13234567899',
-      stateId: 13,
-      cityId: 13,
     },
   },
   {
@@ -163,10 +111,6 @@ export const fakeUsers = [
     role: Role.MANAGER,
     person: {
       name: 'Nathan Scott',
-      birthdate: new Date('1983-02-28'),
-      cpf: '14234567899',
-      stateId: 14,
-      cityId: 14,
     },
   },
   {
@@ -175,10 +119,6 @@ export const fakeUsers = [
     role: Role.USER,
     person: {
       name: 'Olivia Adams',
-      birthdate: new Date('1997-06-16'),
-      cpf: '15234567899',
-      stateId: 15,
-      cityId: 15,
     },
   },
   {
@@ -187,10 +127,6 @@ export const fakeUsers = [
     role: Role.USER,
     person: {
       name: 'Paul Carter',
-      birthdate: new Date('1992-11-20'),
-      cpf: '16234567899',
-      stateId: 16,
-      cityId: 16,
     },
   },
   {
@@ -199,10 +135,6 @@ export const fakeUsers = [
     role: Role.ADMIN,
     person: {
       name: 'Quincy Perez',
-      birthdate: new Date('1981-08-05'),
-      cpf: '17234567899',
-      stateId: 17,
-      cityId: 17,
     },
   },
   {
@@ -211,10 +143,6 @@ export const fakeUsers = [
     role: Role.MANAGER,
     person: {
       name: 'Rachel Edwards',
-      birthdate: new Date('1984-09-14'),
-      cpf: '18234567899',
-      stateId: 18,
-      cityId: 18,
     },
   },
   {
@@ -223,10 +151,6 @@ export const fakeUsers = [
     role: Role.USER,
     person: {
       name: 'Sam Wilson',
-      birthdate: new Date('1996-12-03'),
-      cpf: '19234567899',
-      stateId: 19,
-      cityId: 19,
     },
   },
   {
@@ -235,10 +159,6 @@ export const fakeUsers = [
     role: Role.USER,
     person: {
       name: 'Tina Brown',
-      birthdate: new Date('1999-07-30'),
-      cpf: '20234567899',
-      stateId: 20,
-      cityId: 20,
     },
   },
 ]

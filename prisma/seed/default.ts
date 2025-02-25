@@ -4,10 +4,6 @@ export const defaultUsers = {
     password: 'Center@adm1n',
     person: {
       name: 'Admin Seed',
-      birthdate: new Date('1990-01-01'),
-      cpf: '12345678900',
-      stateId: 1,
-      cityId: 1,
     },
   },
   manager: {
@@ -15,10 +11,6 @@ export const defaultUsers = {
     password: 'Center@manager',
     person: {
       name: 'Manager Seed',
-      birthdate: new Date('1990-01-01'),
-      cpf: '12345678901',
-      stateId: 1,
-      cityId: 1,
     },
   },
   user: {
@@ -26,10 +18,6 @@ export const defaultUsers = {
     password: 'Center@user',
     person: {
       name: 'User Seed',
-      birthdate: new Date('1990-01-01'),
-      cpf: '12345678902',
-      stateId: 1,
-      cityId: 1,
     },
   },
   pilot: {
@@ -37,11 +25,6 @@ export const defaultUsers = {
     password: 'Center@pilot',
     person: {
       name: 'Pilot Seed',
-      birthdate: new Date('1990-01-01'),
-      cpf: '12345678903  ',
-      isPilot: true,
-      stateId: 1,
-      cityId: 1,
     },
   },
 }

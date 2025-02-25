@@ -30,11 +30,6 @@ export class SignUpDto {
   @IsNotEmpty()
   birthdate: Date
 
-  @IsOptional()
-  @IsCpf()
-  @IsUnique('person', 'cpf')
-  cpf: string
-
   @ApiProperty({ type: 'string', format: 'binary', required: false })
   @IsOptional()
   avatar?: string
@@ -71,10 +66,6 @@ export class SignInDto {
 }
 
 export class SignInCpfDto {
-  @IsNotEmpty()
-  // @IsCpf()
-  cpf: string
-
   @IsNotEmpty()
   password: string
 }

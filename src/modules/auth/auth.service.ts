@@ -39,23 +39,6 @@ export class AuthService {
         person: {
           select: {
             name: true,
-            birthdate: true,
-            cpf: true,
-            canac: true,
-            city: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-            state: {
-              select: {
-                id: true,
-                name: true,
-                code: true,
-              },
-            },
-            isPilot: true,
           },
         },
       },
@@ -112,14 +95,10 @@ export class AuthService {
   }
 
   async signInCpf({
-    cpf,
     password,
   }: SignInCpfDto): Promise<UserCreateResponseDTO> {
     const user = await prisma.user.findFirst({
       where: {
-        person: {
-          cpf,
-        },
         status: 'ACTIVE',
       },
       select: {
@@ -132,23 +111,6 @@ export class AuthService {
         person: {
           select: {
             name: true,
-            birthdate: true,
-            cpf: true,
-            canac: true,
-            city: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-            state: {
-              select: {
-                id: true,
-                name: true,
-                code: true,
-              },
-            },
-            isPilot: true,
           },
         },
       },
@@ -263,24 +225,7 @@ export class AuthService {
         role: true,
         person: {
           select: {
-            name: true,
-            birthdate: true,
-            cpf: true,
-            canac: true,
-            city: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-            state: {
-              select: {
-                id: true,
-                name: true,
-                code: true,
-              },
-            },
-            isPilot: true,
+            name: true
           },
         },
       },
