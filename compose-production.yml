@@ -26,7 +26,7 @@ services:
 
   backend:
     restart: always
-    container_name: "api-vizinhanca-shopping.com.br"
+    container_name: "${API_HOST}"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
@@ -51,7 +51,7 @@ services:
       HASH_SALT: "${HASH_SALT}"
     labels:
       traefik.enable: true
-      traefik.http.routers.backend1.service: backend
+      traefik.http.routers.backend.service: backend
       traefik.http.routers.backend.rule: Host(`${API_HOST}`)
       traefik.http.routers.backend.entrypoints: http
       traefik.http.routers.backend-secure.rule: Host(`${API_HOST}`)
