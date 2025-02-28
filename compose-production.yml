@@ -31,10 +31,8 @@ services:
       - "host.docker.internal:host-gateway"
     networks:
       - default
-    command: sh -c "yarn install && npx prisma generate && yarn build && npx prisma migrate deploy && yarn start:prod"
-    build:
-      context: ./
-      dockerfile: ./registry/${ENVIRONMENT}/Dockerfile
+    command: sh -c "yarn start:prod"
+    image: dudurosa/vizinhanca-shopping
     volumes:
       - "./:/usr/src/app"
     ports:
