@@ -29,6 +29,14 @@ import { AuthMiddlewareRequest } from 'src/types/type'
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Post('sign-in/oauth')
+  async oAuth(
+    @Body() data: { token: string; type: 'GOOGLE' | 'APPLE' | 'FACEBOOK' },
+    @Headers('x-request-origin') headers: string,
+  ) {
+    return await this.authService.signInWithOauth(data, headers)
+  }
+
   @Post('sign-up')
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(

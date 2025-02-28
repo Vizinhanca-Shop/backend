@@ -56,6 +56,10 @@ model User {
   person           Person?
 
   @@map("users")
+
+  FacebookOauth FacebookOauth?
+  GoogleOauth GoogleOauth?
+  AppleOauth AppleOauth?
 }
 
 model Person {
@@ -103,6 +107,36 @@ model Avatar {
   User      User?
 
   @@map("avatar")
+}
+
+model FacebookOauth {
+  id        String   @id
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("facebook_oauth")
+}
+
+model GoogleOauth {
+  id        String   @id
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("google_oauth")
+}
+
+model AppleOauth {
+  id        String   @unique
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("apple_oauth")
 }
 
 model Session {

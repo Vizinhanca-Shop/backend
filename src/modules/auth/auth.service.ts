@@ -15,13 +15,25 @@ import {
   SignInCpfDto,
 } from './dto/auth.dto'
 import { I18nTranslations } from 'src/i18n/generated/i18n.types'
+import { GoogleStrategy } from './strategies/google'
+import { FacebookStrategy } from './strategies/facebook'
+import { AppleStrategy } from './strategies/apple'
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UserService,
     private readonly i18n: I18nService<I18nTranslations>,
-  ) {}
+  ) { }
+
+  async signInWithOauth(data: { token: string; type: 'GOOGLE' | 'APPLE' | 'FACEBOOK' }, headers: string,) {
+    const strategy = {
+      GOOGLE: new GoogleStrategy(),
+      FACEBOOK: new FacebookStrategy(),
+      APPLE: new AppleStrategy(),
+    }
+    return await strategy[data.type].validate(data.token, headers)
+  }
 
   async signIn({ email, password }: SignInDto): Promise<UserCreateResponseDTO> {
     const user = await prisma.user.findUnique({
